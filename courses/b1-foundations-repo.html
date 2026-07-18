@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Builder session 1 · Foundations: repo, Git flow, CI, Docker - learn dataops with phoebe</title>
-<link rel="stylesheet" href="../assets/style.css?v=1">
+<link rel="stylesheet" href="../assets/style.css?v=2">
 </head>
 <body>
 
@@ -44,7 +44,7 @@
       <span class="klabel">Part 0</span>
       <h2>How this track works</h2>
     </div>
-    <p class="lede">Eight sessions, one growing artifact: <strong>RetailPulse</strong>, a retail sales data product that starts tonight as a repo with one small pipeline and graduates in session b8 with orchestration, data contracts, database migrations, a monitored forecast model, and a promote-to-prod release. Every session industrializes the same code. The rule of this track: you build each capability by hand and feel it break first, so the tooling never gets to be magic.</p>
+    <p class="lede">Eight sessions, one growing artifact: <strong>RetailPulse</strong>, a retail sales data product that starts tonight as a repo with one small pipeline and graduates in session b8 with orchestration, data contracts, database migrations, a monitored forecast model, and a promote-to-prod release. The unit of work is not a tool - it is <strong>the diff</strong>: one reviewable change that can touch code, schema, data expectations, and a model at once, and either passes every gate or does not merge. Each session adds one more thing a single safe change can now move. Two rules run through the track: you build each capability by hand and feel it break first, so the tooling never gets to be magic - and everything you build is really a way to <em>read</em> a change and judge it, because by b8 the change you review will have been written by an AI agent, not you.</p>
     <div class="legend">
       <span class="pill solid">Live - presented in session</span>
       <span class="pill light">Self-study - read after class</span>

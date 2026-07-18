@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Builder session 8 · Full CD to prod: the capstone - learn dataops with phoebe</title>
-<link rel="stylesheet" href="../assets/style.css?v=1">
+<link rel="stylesheet" href="../assets/style.css?v=2">
 </head>
 <body>
 
@@ -44,7 +44,7 @@
       <span class="klabel">Part 0</span>
       <h2>The last mile</h2>
     </div>
-    <p class="lede">RetailPulse can do everything except the thing that scares people most: go to production on purpose, safely, on a random Tuesday. Seven sessions built the pieces. Tonight assembles them into a release. The hard truth of DataOps - the reason this is the last and hardest session - is that a data product is not one artifact. It is code, a schema, and a model, and they must all promote together, in the right order, or the release corrupts data instead of shipping value.</p>
+    <p class="lede">RetailPulse can do everything except the thing that scares people most: go to production on purpose, safely, on a random Tuesday. Seven sessions built the pieces. Tonight assembles them into a release. The hard truth of DataOps - the reason this is the last and hardest session - is that a data product is not one artifact. It is code, a schema, and a model, and they must all promote together, in the right order, or the release corrupts data instead of shipping value. This is <strong>the diff</strong> at full size: one change, touching everything, that either passes every gate or does not ship. And there is a final twist - the last change you review tonight will have been written by an AI agent, not you, because that is the job the rest of this decade actually is.</p>
     <div class="legend">
       <span class="pill solid">Live - presented in session</span>
       <span class="pill light">Self-study - read after class</span>
@@ -254,7 +254,7 @@
   <!-- ============ DEMO 1 ============ -->
   <section class="section" id="demo-1">
     <div class="section-kicker">
-      <span class="klabel">Demo 1 of 2</span>
+      <span class="klabel">Demo 1 of 3</span>
       <h2>A promotion workflow <span class="tag demo">★ 12 min · everyone builds</span></h2>
     </div>
     <p class="lede">RetailPulse v1.0, part one: a GitHub Actions CD workflow. On every merge to <code>main</code> it builds, tests, and pushes the image, then deploys to staging automatically. On a version tag it promotes that same image to prod - but only after a human clicks approve on a protected environment. Automation for speed, a gate for safety.</p>
@@ -309,8 +309,8 @@ jobs:
   <!-- ============ DEMO 2 ============ -->
   <section class="section" id="demo-2">
     <div class="section-kicker">
-      <span class="klabel">Demo 2 of 2</span>
-      <h2>End-to-end release and tag v1.0 <span class="tag demo">★ 10 min · the capstone</span></h2>
+      <span class="klabel">Demo 2 of 3</span>
+      <h2>End-to-end release and tag v1.0 <span class="tag demo">★ 10 min · everyone builds</span></h2>
     </div>
     <p class="lede">RetailPulse v1.0, part two: run the entire product end to end in staging - migrate, ingest, test, train and register, deploy, monitor - verify it, then tag <code>v1.0</code> and let the gated pipeline promote it to prod. This is the moment every session has been building toward.</p>
 
@@ -356,6 +356,63 @@ echo "✓ end-to-end green in staging - safe to tag v1.0"</div>
     </div>
   </section>
 
+  <!-- ============ DEMO 3: THE 2027 MOVE ============ -->
+  <section class="section" id="demo-3">
+    <div class="section-kicker">
+      <span class="klabel">Demo 3 of 3 · the twist that makes this whole track future-proof</span>
+      <h2>Review a change you did not write <span class="tag demo">★ 10 min · the real capstone</span></h2>
+    </div>
+    <p class="lede">Here is the quiet truth of everything you built. By the time this course is popular, an AI agent will scaffold an Airflow DAG, write the dbt tests, and generate the migration faster than you can open the file. So the skill that pays your salary is not typing the pipeline - it is being the one who can read the change the machine produced and tell whether it is safe to merge. Every gate you built across b1-b7 exists for this moment. The generator is cheap and confidently wrong; the verifier is scarce. Tonight you are the verifier.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An AI agent generates a change, it passes through the gates you built - tests, contract, migration check, drift - and you the human make the merge decision">
+        <style>
+          .b8vT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b8vL { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .b8vI { font: 700 13px Inter, sans-serif; fill: #0F172A; }
+          .b8vX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b8vN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b8vArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b8vAh); }
+        </style>
+        <defs>
+          <marker id="b8vAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="80" width="180" height="70" rx="12" fill="#134E4A"/>
+        <text class="b8vT" x="54" y="110">AI agent</text>
+        <text class="b8vL" x="54" y="132">writes the change</text>
+        <rect x="300" y="60" width="240" height="110" rx="12" fill="#0F766E"/>
+        <text class="b8vT" x="324" y="88">Your gates (b1-b7)</text>
+        <text class="b8vL" x="324" y="110">CI · data contract · GE suite</text>
+        <text class="b8vL" x="324" y="128">migration check · drift check</text>
+        <text class="b8vL" x="324" y="150">the machine cannot skip these</text>
+        <rect x="630" y="80" width="220" height="70" rx="12" fill="#2DD4BF"/>
+        <text class="b8vI" x="654" y="108">You decide: merge?</text>
+        <text class="b8vX" x="654" y="130" fill="#134E4A">read the diff, judge, approve</text>
+        <line class="b8vArr" x1="212" y1="115" x2="298" y2="115"/>
+        <line class="b8vArr" x1="542" y1="115" x2="628" y2="115"/>
+        <text class="b8vX" x="300" y="196">cheap + confidently wrong -> gated -> a human who can actually read it</text>
+        <rect x="30" y="224" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b8vN" x="54" y="236">You built the gates by hand so you can trust them to catch what the generator gets wrong.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the 2027 loop: generate cheap, gate hard, let a human who understands it decide</figcaption>
+    </figure>
+
+    <div class="steps">
+      <div class="step"><p>Ask an AI coding agent to add a feature to RetailPulse - for example, "add a <code>promo_flag</code> column and use it in the demand forecast". Let it write the migration, the pipeline change, the test, and the model tweak. Do not review it yet.</p></div>
+      <div class="step"><p>Open the change as a pull request and let your gates run: CI, the Great Expectations suite, the data-contract check, the migration dry-run, the model-CI metric. Watch which gates the agent's change passes and which it trips.</p></div>
+      <div class="step"><p>Now read the diff like a skeptic. Look for the failure modes agents are good at hiding: a silent type coercion, a join that fans out row counts, a migration that is not additive (breaks expand-contract), target leakage in the new feature, a dropped null-check. Find at least one thing the green checks did not catch.</p></div>
+      <div class="step"><p>Write the review: what you would request-change, what you would block, what you would let merge. This is the artifact - not the code the agent wrote, but your judgment about it.</p></div>
+      <div class="step"><p>Only if it survives your review and every gate: merge it, and run it through the same gated CD you built in Demo 1. The agent proposed; the gates filtered; <em>you</em> decided. That sequence is the job.</p></div>
+    </div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The agent that shipped a data leak nobody caught for a sprint.</strong> A team let an assistant add a "days since last purchase" feature to a churn model. Every test was green; the model's accuracy jumped, so it merged. The feature was computed <em>after</em> the churn event - textbook leakage - and the model was quietly useless in production for two weeks. No linter catches that. A human who understood the pipeline would have, in thirty seconds. That human is what this course actually trains you to be.</p>
+    </div>
+  </section>
+
   <!-- ============ HOMEWORK ============ -->
   <section class="section" id="exercise">
     <div class="section-kicker">
@@ -368,6 +425,7 @@ echo "✓ end-to-end green in staging - safe to tag v1.0"</div>
       <li>Add a one-line rollback to <code>deploy.sh</code> (re-point to the previous image) and rehearse it once. The confidence to ship comes from the confidence to un-ship.</li>
       <li>What to build next: pick one from the mature-next-step card - a Feast feature store, a streaming source, or Terraform for prod - and sketch how it slots into RetailPulse. You now have the spine to hang it on.</li>
       <li>Write your own one-paragraph "DataOps scorecard" for a real project at work. You now know all ten rows and can tell which are green.</li>
+      <li>The verifier drill: have an AI agent generate one more RetailPulse change, then write a real code review of it - what you would block and why. Practice being the human the gates cannot replace. This is the skill that outlives every tool in this course.</li>
     </ul>
   </section>
 
@@ -428,7 +486,8 @@ echo "✓ end-to-end green in staging - safe to tag v1.0"</div>
       <div class="cheat-item"><b>Safety patterns</b><span>Blue-green (instant rollback) · canary (ramp slowly) · shadow (prove a model on real traffic first).</span></div>
       <div class="cheat-item"><b>Gated CD</b><span>Merge to main -> staging auto. Tag v* -> prod behind a manual approval gate. Promote the same image, never rebuild.</span></div>
       <div class="cheat-item"><b>Running project</b><span>RetailPulse v1.0 - graduated. Ten scorecard rows green, promoted to prod in lockstep, reversible.</span></div>
-      <div class="cheat-item"><b>The whole track in one line</b><span>DataOps is DevOps discipline pointed at data - version, test, orchestrate, migrate, track, serve, observe, and promote code + schema + model together, safely, to prod.</span></div>
+      <div class="cheat-item"><b>The 2027 move</b><span>Agents write the change; your gates filter it; YOU read the diff and decide. The verifier is the durable role - it is what all the tooling was really training.</span></div>
+      <div class="cheat-item"><b>The whole track in one line</b><span>DataOps is the judgment and the gates that make any data change - yours or an agent's - safe to ship: version, test, orchestrate, migrate, track, serve, observe, promote in lockstep.</span></div>
     </div>
   </section>
 

@@ -86,10 +86,11 @@ body {
   color: #fff;
 }
 .agenda span { padding: .45rem .3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.agenda .a1 { background: var(--indigo-deep); }
-.agenda .a2 { background: var(--indigo-mid); }
-.agenda .a3 { background: var(--amber); color: var(--amber-ink); }
-.agenda .a4 { background: var(--indigo-soft); }
+/* clean teal ramp; light segments take ink text for WCAG contrast; amber reserved for signal, not time-segments */
+.agenda .a1 { background: var(--indigo-deep); color: #fff; }
+.agenda .a2 { background: var(--indigo); color: #0F172A; }
+.agenda .a3 { background: var(--indigo-mid); color: #0F172A; }
+.agenda .a4 { background: var(--indigo-soft); color: #0F172A; }
 
 /* ---------- toolbar ---------- */
 .toolbar {
