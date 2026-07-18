@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 3 · The maturity model and the metrics that matter - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Leader session 3 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Leader track · Session 3 of 6</div>
+    <h1>The maturity model and <span class="accent">the metrics that matter</span></h1>
+    <p class="sub">"Are we good at DataOps?" is a fair question with a terrible answer if all you have is a feeling. This session gives you two honest instruments: a five-level maturity ladder that tells you where you stand, and four metrics - borrowed from the best software research on Earth - that tell you the truth about your data delivery. This session, no code: what each rung of the ladder unlocks, what the four numbers mean, and how to read them without lying to yourself.</p>
+    <div class="chip-row">
+      <span class="chip level">🤝 Leader track</span>
+      <span class="chip audience">C-level · managers · data leads</span>
+      <span class="chip audience">No code, ever</span>
+      <span class="chip time">Medium depth</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:5">3-30 · Ladder and metrics</span>
+      <span class="a3" style="flex:4">30-42 · Boardroom exercise</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where we are</h2>
+    </div>
+    <p class="lede">Session 1 named the reliability tax. Session 2 mapped the four pillars to four business risks. Now the natural leadership question: how mature are we, and how would we prove it? This session hands you two instruments a board will respect - a maturity ladder to locate yourself, and four metrics to measure yourself against the best. Both are plain-English, and both are meant for improvement, not for beating people up.</p>
+    <div class="legend">
+      <span class="pill solid">Live - discussed in session</span>
+      <span class="pill light">Self-study - read after</span>
+      <span class="pill peach">★ Questions for your team</span>
+      <span class="pill inkpill">Strategy, not tooling</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A five-level maturity ladder you can place your organization on honestly, a clear sense of the single leap each level unlocks, the four DORA metrics translated into their data equivalents, an honest framing of what elite versus low performance looks like, and the discipline to read these numbers as a compass rather than a scoreboard.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE MATURITY LADDER ============ -->
+  <section class="section" id="ladder">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · locate yourself</span>
+      <h2>The DataOps maturity ladder <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Maturity is not a grade; it is a location. Most organizations sit on one of five rungs, and each rung is defined by the single capability it unlocks. You climb by earning the next leap, not by buying the next tool. Find your rung honestly and the path up becomes obvious.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A five-rung ascending ladder from ad hoc to self-service, each rung labelled with the leap it unlocks">
+        <style>
+          .a3lT { font: 700 13.5px Inter, sans-serif; fill: #FFFFFF; }
+          .a3lX { font: 400 11.5px Inter, sans-serif; fill: #CCFBF1; }
+          .a3lI { font: 700 13.5px Inter, sans-serif; fill: #0F172A; }
+          .a3lM { font: 400 11.5px Inter, sans-serif; fill: #64748B; }
+          .a3lN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .a3lArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#a3lAh); }
+        </style>
+        <defs>
+          <marker id="a3lAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="24" y="248" width="300" height="52" rx="10" fill="#134E4A"/>
+        <text class="a3lT" x="42" y="270">1 · Ad hoc / heroic</text>
+        <text class="a3lX" x="42" y="290">it works because someone remembers</text>
+        <rect x="24" y="188" width="300" height="52" rx="10" fill="#0F766E"/>
+        <text class="a3lT" x="42" y="210">2 · Repeatable / version-controlled</text>
+        <text class="a3lX" x="42" y="230">steps are written down and tracked</text>
+        <rect x="24" y="128" width="300" height="52" rx="10" fill="#0F766E"/>
+        <text class="a3lT" x="42" y="150">3 · Automated CI/CD</text>
+        <text class="a3lX" x="42" y="170">changes ship through automated gates</text>
+        <rect x="24" y="68" width="300" height="52" rx="10" fill="#14B8A6"/>
+        <text class="a3lT" x="42" y="90">4 · Measured / observed</text>
+        <text class="a3lX" x="42" y="110">you can see quality and speed live</text>
+        <rect x="24" y="20" width="300" height="42" rx="10" fill="#2DD4BF"/>
+        <text class="a3lI" x="42" y="46">5 · Self-service / governed</text>
+        <line class="a3lArr" x1="330" y1="274" x2="360" y2="234"/>
+        <line class="a3lArr" x1="330" y1="214" x2="360" y2="174"/>
+        <line class="a3lArr" x1="330" y1="154" x2="360" y2="114"/>
+        <line class="a3lArr" x1="330" y1="94" x2="360" y2="54"/>
+        <rect x="384" y="244" width="472" height="56" rx="10" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a3lM" x="404" y="268">Leap unlocked: from 1 to 2 - the process stops living in one person's head</text>
+        <text class="a3lM" x="404" y="288">and survives when they leave</text>
+        <rect x="384" y="184" width="472" height="52" rx="10" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a3lM" x="404" y="208">Leap: from 2 to 3 - releases become fast and safe because</text>
+        <text class="a3lM" x="404" y="226">machines test and ship each change</text>
+        <rect x="384" y="124" width="472" height="52" rx="10" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a3lM" x="404" y="148">Leap: from 3 to 4 - you can finally see quality and speed,</text>
+        <text class="a3lM" x="404" y="166">so you manage by evidence, not anecdote</text>
+        <rect x="384" y="64" width="472" height="52" rx="10" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a3lM" x="404" y="88">Leap: from 4 to 5 - trusted teams serve themselves safely</text>
+        <text class="a3lM" x="404" y="106">inside guardrails, and the data team scales</text>
+        <rect x="384" y="20" width="472" height="34" rx="10" fill="#5EEAD4"/>
+        <text class="a3lI" x="404" y="42">Top rung: governed self-service across the business</text>
+        <rect x="24" y="312" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a3lN" x="46" y="324">Climb one rung at a time. Each leap unlocks a capability the rung below simply cannot reach.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the five-rung DataOps maturity ladder and the leap each rung unlocks</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The five levels, plainly<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Read these as honest self-descriptions. Most organizations are lower than they would like to admit, and that is fine - naming the rung is how you climb it:</p>
+        <ul>
+          <li><strong>Level 1 - Ad hoc / heroic.</strong> Things work because talented people remember the steps and fix breakage by hand, often at night. Nothing is written down where it counts. It feels productive and is quietly fragile.</li>
+          <li><strong>Level 2 - Repeatable / version-controlled.</strong> The steps are captured and tracked, so the same process runs the same way twice and survives someone leaving. This is the first rung where the system, not the person, holds the knowledge.</li>
+          <li><strong>Level 3 - Automated CI/CD.</strong> Changes flow through automated checks and ship on a repeatable path. Releases stop being scary because machines test each change before it reaches anyone.</li>
+          <li><strong>Level 4 - Measured / observed.</strong> You can see quality and speed as they happen - you know when data is late or wrong before a user tells you. Now you manage by evidence instead of anecdote.</li>
+          <li><strong>Level 5 - Self-service / governed.</strong> Trusted teams across the business serve themselves inside clear guardrails. The central data team stops being a bottleneck and starts being a platform. This is the summit, and few reach it.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The honest-placement rule</strong>
+          You are on the highest rung you can meet for every pipeline, not the best one you have ever managed once. If any core pipeline is still heroic, part of you is still on level 1.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: DORA FOR DATA ============ -->
+  <section class="section" id="dora">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · measure yourself</span>
+      <h2>DORA for data - the four numbers that tell the truth <span class="tag concept">9 min live</span></h2>
+    </div>
+    <p class="lede">Software has the best-researched delivery metrics in existence - the four DORA metrics, drawn from years of studying thousands of teams. They translate cleanly to data, and together they cut through every "we are doing fine" with four honest numbers: how often you ship, how fast, how often it breaks, and how quickly you recover.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The four metrics, translated<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>DORA metric</th><th>Data equivalent</th><th>What a good answer looks like</th></tr></thead>
+          <tbody>
+            <tr><td>Deployment frequency</td><td>How often you ship data or pipeline changes</td><td>Frequent, small, low-drama changes rather than rare, giant, risky ones</td></tr>
+            <tr><td>Lead time for changes</td><td>Idea to production for a data change</td><td>Hours or a day, not weeks stuck in a queue</td></tr>
+            <tr><td>Change failure rate</td><td>Percent of data changes that cause an incident or bad data</td><td>Low and falling - most changes land cleanly</td></tr>
+            <tr><td>Time to restore (MTTR)</td><td>How fast you detect and fix a bad-data incident</td><td>Minutes to hours, because you saw it before the users did</td></tr>
+          </tbody>
+        </table>
+        <div class="callout tip">
+          <strong>Why these four and not a dashboard of fifty</strong>
+          Two measure speed (frequency, lead time) and two measure stability (failure rate, restore time). The whole point of the DORA research is that the best teams are not forced to trade one for the other - they are fast and stable at once. Four numbers is enough to know the truth.
+        </div>
+      </div>
+    </details>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The four DORA metrics arranged as a two-by-two of speed and stability">
+        <style>
+          .a3dH { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .a3dS { font: 400 11px Inter, sans-serif; fill: #CCFBF1; }
+          .a3dI { font: 700 13px Inter, sans-serif; fill: #0F172A; }
+          .a3dM { font: 400 11px Inter, sans-serif; fill: #64748B; }
+          .a3dL { font: 700 12px Inter, sans-serif; fill: #134E4A; }
+          .a3dN { font: 600 14px Inter, sans-serif; fill: #431407; }
+        </style>
+        <text class="a3dL" x="150" y="34" text-anchor="middle">SPEED</text>
+        <text class="a3dL" x="560" y="34" text-anchor="middle">STABILITY</text>
+        <rect x="24" y="48" width="252" height="72" rx="12" fill="#134E4A"/>
+        <text class="a3dH" x="44" y="76">Deployment frequency</text>
+        <text class="a3dS" x="44" y="98">how often you ship a</text>
+        <text class="a3dS" x="44" y="113">data or pipeline change</text>
+        <rect x="24" y="134" width="252" height="72" rx="12" fill="#0F766E"/>
+        <text class="a3dH" x="44" y="162">Lead time for changes</text>
+        <text class="a3dS" x="44" y="184">idea to production for</text>
+        <text class="a3dS" x="44" y="199">a single data change</text>
+        <rect x="434" y="48" width="252" height="72" rx="12" fill="#14B8A6"/>
+        <text class="a3dH" x="454" y="76">Change failure rate</text>
+        <text class="a3dS" x="454" y="98">percent of changes that</text>
+        <text class="a3dS" x="454" y="113">cause bad data</text>
+        <rect x="434" y="134" width="252" height="72" rx="12" fill="#0F766E"/>
+        <text class="a3dH" x="454" y="162">Time to restore</text>
+        <text class="a3dS" x="454" y="184">how fast you detect and</text>
+        <text class="a3dS" x="454" y="199">fix a bad-data incident</text>
+        <rect x="704" y="48" width="152" height="158" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a3dI" x="724" y="76">Elite teams</text>
+        <text class="a3dM" x="724" y="100">are fast AND</text>
+        <text class="a3dM" x="724" y="118">stable at once</text>
+        <text class="a3dM" x="724" y="142">Low performers</text>
+        <text class="a3dM" x="724" y="160">believe they must</text>
+        <text class="a3dM" x="724" y="178">trade one for</text>
+        <text class="a3dM" x="724" y="196">the other</text>
+        <rect x="24" y="230" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a3dN" x="46" y="242">Two speed numbers, two stability numbers. The best teams refuse to trade them - they win on all four.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the four DORA metrics as speed and stability, for data</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Elite versus low performers, honestly<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The DORA research sorts teams into performance bands, and the gap is enormous - elite performers ship far more often and recover far faster than low performers, while breaking things less. The honest takeaways for a data leader:</p>
+        <ul>
+          <li><strong>Speed and stability rise together.</strong> The old belief that going faster means breaking more is wrong for high performers. Automation is what lets them have both, which is the entire DataOps thesis.</li>
+          <li><strong>The bands are relative, not absolute.</strong> "Elite" for a bank is not "elite" for a startup. Do not chase someone else's numbers; measure your own trend and beat last quarter.</li>
+          <li><strong>You do not need perfect measurement to start.</strong> A rough, honest number this month that you improve next month beats a precise number you never collect. Direction matters more than decimals.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: READING METRICS HONESTLY ============ -->
+  <section class="section" id="honest">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · use them well</span>
+      <h2>Reading the metrics honestly <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Metrics can heal a team or wreck it, depending on how the leader holds them. The difference is entirely in your hands, and it is worth getting right before you ever put a number on a slide.</p>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Compass, not scoreboard<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Four principles keep these numbers useful instead of toxic:</p>
+        <ul>
+          <li><strong>For improvement, not punishment.</strong> The moment a metric is used to blame a person, people optimize the metric and hide the truth. Measure the system, coach the people.</li>
+          <li><strong>Watch the trend, not the point.</strong> A single month's figure is noise. The direction over a quarter is the signal. Ask "are we getting better?" not "did we hit the number?".</li>
+          <li><strong>Beware vanity metrics.</strong> "We ran 4,000 pipelines" sounds impressive and tells you nothing. "Our change failure rate fell from 20% to 6%" is real, because it maps to a risk you named in session 2.</li>
+          <li><strong>Pair speed with stability, always.</strong> Never celebrate deployment frequency without showing change failure rate beside it, or you reward recklessness. The four numbers are a set; report them as one.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The one-line test</strong>
+          Before you show a metric, ask: would my team feel safe telling me the honest number? If not, you have a scoreboard, and it will lie to you. Turn it back into a compass.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ EXERCISE ============ -->
+  <section class="section" id="exercise-live">
+    <div class="section-kicker">
+      <span class="klabel">Boardroom exercise</span>
+      <h2>Place yourself on the ladder <span class="tag demo">★ 10 min · everyone reflects</span></h2>
+    </div>
+    <p class="lede">No instrumentation required - just honesty. Locate your organization on the maturity ladder, pillar by pillar, and put a rough figure against each of the four metrics. The output is a one-slide "where we are" you could show a board next week.</p>
+
+    <div class="steps">
+      <div class="step"><p><strong>Find your rung.</strong> For your most important pipeline, which of the five levels honestly describes it today - heroic, repeatable, automated, measured, or self-service? Resist rounding up.</p></div>
+      <div class="step"><p><strong>Check for split levels.</strong> Are some pillars higher than others? Many organizations are level 3 on delivery but level 1 on measurement. Name the lowest rung any core pillar sits on - that is your real floor.</p></div>
+      <div class="step"><p><strong>Guess the four numbers.</strong> Roughly: how often do you ship a data change, how long from idea to production, what share of changes cause an incident, and how fast do you recover? A rough number you can improve beats none.</p></div>
+      <div class="step"><p><strong>Pick one leap.</strong> Name the single next rung you want to climb this year and the one metric you would watch to know you are climbing. One leap, one number - that is a strategy a board can back.</p></div>
+    </div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The team that was two levels at once.</strong> A data group proudly called itself "automated" because releases were smooth - level 3 on delivery. But nobody could say how often data was late, because nothing measured it: level 1 on observation. Naming that split, rather than averaging it away, turned their next year's plan into a single clear leap - get to measured - with time-to-restore as the number they watched. Honesty about the lowest rung is what set the direction.</p>
+    </div>
+  </section>
+
+  <!-- ============ QUESTIONS ============ -->
+  <section class="section" id="questions">
+    <div class="section-kicker">
+      <span class="klabel">Take this to work</span>
+      <h2>★ Questions to ask your data team</h2>
+    </div>
+    <div class="callout win">
+      <strong>Five questions that place you and measure you</strong>
+      Ask for numbers, not adjectives. "Fast" is a feeling; "under a day" is a metric.
+    </div>
+    <ul>
+      <li><strong>"Which of the five maturity levels would you honestly put our core pipelines on, and why?"</strong> The reasoning matters more than the number - listen for whether the process lives in people or in the system.</li>
+      <li><strong>"How often do we ship a data change, and how long does one take from idea to production?"</strong> These are your deployment frequency and lead time - the speed half of the truth.</li>
+      <li><strong>"What share of our changes cause an incident or bad data, and how fast do we recover?"</strong> Change failure rate and time to restore - the stability half. If we cannot answer, we are not yet measured.</li>
+      <li><strong>"Would you feel safe telling me the real numbers?"</strong> If the honest answer is no, our metrics are a scoreboard and they will mislead us. This is the culture question hiding inside the data.</li>
+      <li><strong>"What single leap up the ladder should we target this year, and which one metric proves we made it?"</strong> This turns maturity from a vague aspiration into a fundable plan.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session draws on DataOps maturity frameworks and the DORA software-delivery research, translated for a data leader. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The DataOps maturity ladder</span><span class="note">Part 1 · five levels from ad hoc to governed self-service</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The four DORA metrics for data</span><span class="note">Part 2 · frequency, lead time, failure rate, restore time</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Elite versus low performers</span><span class="note">Part 2 · speed and stability rise together, bands are relative</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Reading metrics honestly</span><span class="note">Part 3 · compass not scoreboard, trends, vanity metrics</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Build, buy, or open-source</span><span class="note">previewed here; the tooling decision is the subject of a4</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · The leap from level 1 (ad hoc/heroic) to level 2 (repeatable) mainly means...</p>
+      <button class="qopt" type="button">A · Buying a bigger data warehouse</button>
+      <button class="qopt" type="button">B · The process stops living in one person's head and survives when they leave</button>
+      <button class="qopt" type="button">C · Hiring more data scientists</button>
+      <p class="qwhy">Level 2 is the first rung where knowledge lives in the tracked, version-controlled system rather than in a heroic individual's memory - so it runs the same way twice.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · "Change failure rate" as a data metric measures...</p>
+      <button class="qopt" type="button">A · How many pipelines you run per week</button>
+      <button class="qopt" type="button">B · How long a data change waits in a queue</button>
+      <button class="qopt" type="button">C · The percent of data changes that cause an incident or bad data</button>
+      <p class="qwhy">It is one of the two stability metrics. Paired with time to restore, it tells you whether shipping faster is quietly costing you reliability.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · The healthiest way for a leader to hold these metrics is...</p>
+      <button class="qopt" type="button">A · As a compass for improvement, watching trends and pairing speed with stability</button>
+      <button class="qopt" type="button">B · As a scoreboard to rank and reward individuals each month</button>
+      <button class="qopt" type="button">C · As a single vanity number to show the board</button>
+      <p class="qwhy">Metrics used to blame people get gamed and hidden. Measure the system, watch the trend, and always show speed and stability together so no one rewards recklessness.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 3 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The five rungs</b><span>1 ad hoc, 2 repeatable, 3 automated, 4 measured, 5 self-service/governed.</span></div>
+      <div class="cheat-item"><b>Honest placement</b><span>You are on the lowest rung any core pipeline sits on, not your best day ever.</span></div>
+      <div class="cheat-item"><b>Deployment frequency</b><span>How often you ship a data change. Frequent and small beats rare and giant.</span></div>
+      <div class="cheat-item"><b>Lead time</b><span>Idea to production for one change. Hours or a day, not weeks in a queue.</span></div>
+      <div class="cheat-item"><b>Change failure rate</b><span>Percent of changes that cause bad data. Low and falling is the goal.</span></div>
+      <div class="cheat-item"><b>Time to restore</b><span>How fast you detect and fix a bad-data incident. Minutes, not days.</span></div>
+      <div class="cheat-item"><b>Elite vs low</b><span>The best teams are fast AND stable. Automation is what removes the trade-off.</span></div>
+      <div class="cheat-item"><b>Next session</b><span>a4 tackles build, buy, or open-source - how to acquire the tooling behind the ladder.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 3 of 6 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="a2-four-pillars.html">← Previous</a> &nbsp;·&nbsp; <a href="a4-build-buy-oss.html">Next: Build, buy, or open-source →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

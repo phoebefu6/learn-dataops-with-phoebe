@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 5 · MLOps I: experiment tracking and the registry - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Builder session 5 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Builder track · Session 5 of 8</div>
+    <h1>MLOps I: <span class="accent">experiment tracking and the registry</span></h1>
+    <p class="sub">RetailPulse can now clean, orchestrate, test, and migrate its data. Tonight it grows a brain: a demand-forecast model that predicts next-period units sold per product and region. But a model is only as trustworthy as your ability to reproduce it. So before we deploy anything, we make every training run a tracked, comparable, registered artifact - and put a CI gate in front of the model just like we did for the code.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Builder track · hands-on</span>
+      <span class="chip audience">Practitioners: DA · DE · DS · ML</span>
+      <span class="chip audience">Python 3.10+ · scikit-learn · MLflow</span>
+      <span class="chip time">Model spine</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-20 · Why tracking + registry</span>
+      <span class="a3" style="flex:5">20-42 · Build-along: track + gate</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where RetailPulse is tonight</h2>
+    </div>
+    <p class="lede">Four sessions in, RetailPulse is a real data product: a <code>clean_sales</code> pipeline that writes <code>clean_sales.parquet</code>, an Airflow DAG that runs it on a schedule, a Great Expectations suite plus a data contract guarding quality, a Postgres <code>sales</code> table with versioned migrations, and green CI on every pull request. It has never had a model. Tonight it gets one - and we treat that model with the exact same discipline as the code: reproducible, reviewed, gated.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill peach">★ Try it now command</span>
+      <span class="pill inkpill">Open-source stack + AWS notes</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A demand-forecast model trained on RetailPulse sales history, with every run logged to MLflow - params, metrics (MAE/RMSE), the model artifact, the data version, and the git sha. The best run promoted into the MLflow Model Registry at the Staging stage. And a model-CI script that retrains, re-evaluates, and blocks the merge if RMSE regresses past a threshold. That is RetailPulse v0.5.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: WHY EXPERIMENTS NEED TRACKING ============ -->
+  <section class="section" id="why-tracking">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the reproducibility crisis + what to log</span>
+      <h2>Why experiments need tracking <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Modelling is search. You try a feature set, a learning rate, a different date window - dozens of runs, each with its own params, data, and metrics. Do that in a notebook and the truth of "which run was best, and can I rebuild it" lives in cell outputs you have already overwritten. A tracking ledger fixes that: one immutable record per run that you can sort, compare, and reproduce.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Left: dozens of scattered notebook runs with lost params and metrics. Right: one tracked ledger you can compare and reproduce">
+        <style>
+          .b5wT { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .b5wTw { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b5wL { font: 400 12.5px Inter, sans-serif; fill: #CCFBF1; }
+          .b5wX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b5wN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b5wArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b5wAh); }
+        </style>
+        <defs>
+          <marker id="b5wAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="40" width="330" height="180" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b5wT" x="52" y="66">Notebook chaos</text>
+        <circle cx="80" cy="100" r="16" fill="#CBD5E1"/><text class="b5wX" x="104" y="104">run? params lost</text>
+        <circle cx="80" cy="140" r="16" fill="#CBD5E1"/><text class="b5wX" x="104" y="144">run? metric in cell</text>
+        <circle cx="80" cy="180" r="16" fill="#CBD5E1"/><text class="b5wX" x="104" y="184">run? data changed</text>
+        <text class="b5wX" x="52" y="210">"which one shipped?" - nobody knows</text>
+        <rect x="520" y="40" width="330" height="180" rx="12" fill="#134E4A"/>
+        <text class="b5wTw" x="542" y="66">One tracked ledger</text>
+        <text class="b5wL" x="542" y="94">run  params   RMSE   data   sha</text>
+        <text class="b5wL" x="542" y="120">a1   lr=.05    41.2   v3    9f2</text>
+        <text class="b5wL" x="542" y="144">a2   lr=.10    38.7   v3    3c8</text>
+        <text class="b5wL" x="542" y="168">a3   depth=6   36.4   v3    d41 ✓ best</text>
+        <text class="b5wL" x="542" y="200">sort · compare · reproduce any row</text>
+        <line class="b5wArr" x1="366" y1="130" x2="514" y2="130"/>
+        <text class="b5wX" x="386" y="120">log</text>
+        <rect x="30" y="240" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b5wN" x="54" y="252">If you cannot say which run produced the model in prod, you do not have a model - you have a guess.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - scattered notebook runs versus one comparable, reproducible ledger</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The reproducibility crisis, and exactly what to log<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A model result is reproducible only if you can rebuild the same number from the same inputs. In a notebook, the inputs drift silently: you re-ran a cell, the data got a new row, you nudged a hyperparameter and forgot. Six weeks later "the good model" cannot be recreated. Tracking makes reproduction a lookup, not an archaeology dig. Log these on every run:</p>
+        <ul>
+          <li><strong>Params:</strong> every hyperparameter and every choice - learning rate, tree depth, feature list, train/test split date.</li>
+          <li><strong>Metrics:</strong> the numbers you compare on - for a regressor, MAE and RMSE on a held-out set.</li>
+          <li><strong>Artifacts:</strong> the serialized model itself, plus any plots (residuals, feature importance).</li>
+          <li><strong>Data version:</strong> which snapshot of <code>clean_sales</code> trained this - a parquet hash, a table version, or a date cutoff.</li>
+          <li><strong>Git sha + seed:</strong> the exact code commit and the random seed. Together with the data version, these make a run rebuildable byte-for-byte.</li>
+        </ul>
+        <div class="prompt-box good"><span class="label">★ Try it now (your terminal)</span>pip install mlflow scikit-learn pandas pyarrow
+mlflow --version &amp;&amp; python -c "import sklearn; print(sklearn.__version__)"
+# Both should print. MLflow will store runs under ./mlruns by default.</div>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The forecast nobody could rebuild.</strong> A demand team shipped a model that cut stockouts noticeably, then spent a quarter unable to reproduce it - the winning notebook had been re-run, the data had grown, the seed was never set. When a regulator asked how the number was produced, the honest answer was "we are not sure." One line - <code>mlflow.start_run()</code> - would have made that answer "here is the run, the data version, and the commit."</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Tracking is not just for training runs<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The same ledger discipline pays off across the model's life. Log the evaluation run that promoted a model, the batch-scoring job that used it, and the drift report that flagged it for retraining (you build that in b6). When every step writes to the same tracking store, "what happened to this model" becomes one query instead of a Slack thread. The registry - covered in Part 2 - is where those runs graduate from "a number I logged" to "the version serving production."</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: MLFLOW TRACKING + REGISTRY ============ -->
+  <section class="section" id="mlflow">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers MLflow Tracking + the Model Registry</span>
+      <h2>MLflow: tracking + the model registry <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">MLflow is the open-source default for this. A training run logs its params, metrics, and model to <strong>MLflow Tracking</strong>. When a run wins, you register its model into the <strong>Model Registry</strong>, where it gets a version number and moves through stages - None, Staging, Production, Archived. The registry becomes the single answer to "what is serving prod, and where did it come from."</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Training runs log to MLflow Tracking; the best model is registered and promoted through Staging into Production in the Model Registry">
+        <style>
+          .b5mT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b5mI { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .b5mL { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .b5mX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b5mN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b5mArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b5mAh); }
+        </style>
+        <defs>
+          <marker id="b5mAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="50" width="150" height="150" rx="12" fill="#134E4A"/>
+        <text class="b5mT" x="52" y="78">Training runs</text>
+        <text class="b5mL" x="52" y="104">run a1 · params</text>
+        <text class="b5mL" x="52" y="126">run a2 · metrics</text>
+        <text class="b5mL" x="52" y="148">run a3 · model</text>
+        <text class="b5mL" x="52" y="176">seed · data · sha</text>
+        <rect x="270" y="50" width="180" height="150" rx="12" fill="#0F766E"/>
+        <text class="b5mT" x="292" y="78">MLflow Tracking</text>
+        <text class="b5mL" x="292" y="106">every run recorded</text>
+        <text class="b5mL" x="292" y="128">compare side by side</text>
+        <text class="b5mL" x="292" y="150">pick best by RMSE</text>
+        <text class="b5mL" x="292" y="178">run a3 wins ✓</text>
+        <rect x="540" y="30" width="310" height="94" rx="12" fill="#14B8A6"/>
+        <text class="b5mT" x="562" y="58">Model Registry</text>
+        <text class="b5mL" x="562" y="82">demand_forecast · v7</text>
+        <text class="b5mL" x="562" y="104">stage: Staging → Production</text>
+        <rect x="540" y="140" width="310" height="60" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b5mI" x="562" y="166">stages: None → Staging →</text>
+        <text class="b5mI" x="562" y="186">Production → Archived</text>
+        <line class="b5mArr" x1="182" y1="125" x2="268" y2="125"/>
+        <line class="b5mArr" x1="452" y1="110" x2="538" y2="85"/>
+        <text class="b5mX" x="460" y="82">register</text>
+        <rect x="30" y="250" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b5mN" x="54" y="262">Tracking answers "which run was best." The registry answers "which version is live." You need both.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - runs log to Tracking; the winner is registered and promoted through stages</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The four MLflow components - focus on Tracking and Registry<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>MLflow has four parts. Two are the workhorses tonight; the other two are good to know:</p>
+        <ul>
+          <li><strong>Tracking (core tonight):</strong> the API and UI for logging params, metrics, and artifacts per run. <code>mlflow.start_run()</code> opens a run; <code>mlflow.log_param</code> / <code>log_metric</code> / <code>log_model</code> fill it; or <code>mlflow.autolog()</code> captures most of it automatically for scikit-learn.</li>
+          <li><strong>Registry (core tonight):</strong> a versioned store of named models with stage transitions (Staging, Production, Archived). This is what serving and CI point at, not a random file path.</li>
+          <li><strong>Models:</strong> a standard packaging format so any framework's model loads the same way (<code>mlflow.pyfunc</code>). It is what makes the registry framework-agnostic.</li>
+          <li><strong>Projects:</strong> a convention for packaging runnable training code with its environment. Useful later; not needed to log a run.</li>
+        </ul>
+        <table class="clean">
+          <thead><tr><th>What to log for RetailPulse</th><th>MLflow call</th><th>Why it matters</th></tr></thead>
+          <tbody>
+            <tr><td>Hyperparameters, feature list, split date</td><td><code>log_param</code> / autolog</td><td>Reproduce and compare runs</td></tr>
+            <tr><td>MAE, RMSE on held-out weeks</td><td><code>log_metric</code></td><td>Pick the winner objectively</td></tr>
+            <tr><td>Trained regressor</td><td><code>log_model</code></td><td>The artifact you register and serve</td></tr>
+            <tr><td>Data snapshot version / hash</td><td><code>set_tag("data_version", ...)</code></td><td>Ties the model to its training data</td></tr>
+            <tr><td>Git sha, random seed</td><td><code>set_tag</code> / <code>log_param</code></td><td>Byte-for-byte rebuildability</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: REPRODUCIBILITY + MODEL CI ============ -->
+  <section class="section" id="model-ci">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers reproducibility + model CI</span>
+      <h2>Reproducibility and model CI <span class="tag concept">3 min live</span></h2>
+    </div>
+    <p class="lede">In b1 you built CI for code: every PR runs lint and tests, and red blocks the merge. A model deserves the same gate. Model CI trains and evaluates on a pull request and fails if the key metric regresses below a threshold. But a metric gate is only meaningful if the run is reproducible - fixed seed, pinned data, params in config - otherwise the number wobbles for reasons that have nothing to do with your change.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Pin the three things, then gate on the metric<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Reproducibility is three habits, then the gate becomes trustworthy:</p>
+        <ul>
+          <li><strong>Fixed seed:</strong> set <code>random_state</code> everywhere (the split, the model). Same inputs, same output.</li>
+          <li><strong>Pinned data snapshot:</strong> CI trains on a fixed, versioned slice of <code>clean_sales</code> - not "whatever is in the table today." Pin by date cutoff or a committed sample.</li>
+          <li><strong>Params in config:</strong> hyperparameters live in a <code>config.yaml</code> read by both training and CI, so the run is defined by a file, not by memory.</li>
+        </ul>
+        <p><strong>Model CI</strong> then does exactly what code CI does: on a PR, a GitHub Actions job trains the model, evaluates RMSE on the held-out weeks, and <code>exit 1</code> if <code>RMSE &gt; threshold</code>. A change that quietly makes the forecast worse gets blocked before it ever reaches the registry. That is the whole idea - the machine, not a reviewer, catches the regression.</p>
+        <div class="callout tip">
+          <strong>Threshold, not perfection</strong>
+          Set the RMSE threshold a little above your current best, not at it - models fluctuate run to run even with a fixed seed once data grows. The gate exists to catch real regressions, not to punish noise. Revisit the number as the model improves.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Data versioning: the piece people skip<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Code versioning is solved - Git. Data versioning is the part teams neglect, and it is why models become irreproducible. Options range from simple to serious: a date cutoff plus a content hash of the parquet (enough for RetailPulse tonight); a committed small reference sample for CI; or a dedicated tool like DVC or lakeFS that snapshots datasets alongside commits. Whatever you choose, the rule is the same as b1's "never commit data": store the pointer, not the payload. Tag every MLflow run with the data version so a run always knows what it trained on.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Track a demand-forecast run <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">Build features from RetailPulse sales history, train a gradient-boosting regressor to predict next-period units per product and region, and log the whole run to MLflow - params, MAE/RMSE, the model, and the data version. Keep the model simple; the point is the tracking, not the leaderboard.</p>
+
+    <div class="steps">
+      <div class="step"><p>Add a <code>train.py</code> under <code>src/retailpulse/</code>. Read <code>clean_sales.parquet</code>, aggregate to units sold per product, region, and period (say weekly), and build lag features - last week's units, a rolling mean - as predictors of next week's units.</p></div>
+      <div class="step"><p>Split by time, not randomly: train on the earlier weeks, hold out the most recent ones. A random split leaks the future into training and inflates your metric.</p></div>
+      <div class="step"><p>Open an MLflow run with <code>mlflow.start_run()</code> and turn on <code>mlflow.sklearn.autolog()</code>. Fit a <code>GradientBoostingRegressor</code> with a fixed <code>random_state</code>.</p></div>
+      <div class="step"><p>Compute MAE and RMSE on the held-out weeks and <code>log_metric</code> both. Tag the run with the data version and git sha so the run is reproducible.</p></div>
+      <div class="step"><p>Run <code>mlflow ui</code> and open the run. Change one hyperparameter, run again, and compare the two runs side by side. You have a ledger.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ RetailPulse v0.5 - train.py, tracked training run</span>import subprocess, mlflow, mlflow.sklearn, pandas as pd
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+
+SEED = 42
+
+def build_features(path: str) -&gt; pd.DataFrame:
+    df = pd.read_parquet(path)
+    df["period"] = df["order_date"].dt.to_period("W").dt.start_time
+    g = df.groupby(["product", "region", "period"])["quantity"].sum().reset_index()
+    g = g.sort_values("period")
+    g["lag_1"] = g.groupby(["product", "region"])["quantity"].shift(1)
+    g["roll_3"] = g.groupby(["product", "region"])["quantity"].shift(1).rolling(3).mean()
+    return g.dropna()
+
+def main(path: str = "data/clean_sales.parquet", threshold_week: str = "2026-06-01") -&gt; None:
+    feat = build_features(path)
+    X_cols = ["lag_1", "roll_3"]
+    train = feat[feat["period"] &lt; threshold_week]
+    test = feat[feat["period"] &gt;= threshold_week]
+    sha = subprocess.getoutput("git rev-parse --short HEAD")
+
+    mlflow.set_experiment("retailpulse-demand-forecast")
+    mlflow.sklearn.autolog()
+    with mlflow.start_run() as run:
+        mlflow.set_tag("data_version", "clean_sales@2026-07")
+        mlflow.set_tag("git_sha", sha)
+        model = GradientBoostingRegressor(random_state=SEED)
+        model.fit(train[X_cols], train["quantity"])
+        pred = model.predict(test[X_cols])
+        mae = mean_absolute_error(test["quantity"], pred)
+        rmse = mean_squared_error(test["quantity"], pred) ** 0.5
+        mlflow.log_metric("mae", mae)
+        mlflow.log_metric("rmse", rmse)
+        print(f"run {run.info.run_id}  MAE={mae:.2f}  RMSE={rmse:.2f}")
+
+if __name__ == "__main__":
+    main()</div>
+
+    <div class="callout tip">
+      <strong>Data tip</strong>
+      Train only on synthetic or public retail history in this repo - the same rule from b1. And never commit <code>clean_sales.parquet</code> or the <code>mlruns/</code> store; both go in <code>.gitignore</code>. The tracking store holds artifacts, not source data.
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Register the model + a CI gate <span class="tag demo">★ 10 min · build your own</span></h2>
+    </div>
+    <p class="lede">Take the winning run, register its model as <code>demand_forecast</code>, and transition it to Staging. Then add a model-CI script that trains, evaluates, and exits non-zero if RMSE breaks the threshold - wired into GitHub Actions so a regressing model cannot merge.</p>
+
+    <div class="steps">
+      <div class="step"><p>Register the best run's model with <code>mlflow.register_model</code>, giving it the name <code>demand_forecast</code>. MLflow assigns it a version number.</p></div>
+      <div class="step"><p>Transition that version to <strong>Staging</strong> with the <code>MlflowClient</code>. Staging means "evaluated, candidate for prod" - it does not serve yet.</p></div>
+      <div class="step"><p>Write <code>model_ci.py</code>: retrain on the pinned slice, evaluate RMSE, and <code>sys.exit(1)</code> if it exceeds the threshold. This is the model equivalent of <code>pytest</code>.</p></div>
+      <div class="step"><p>Add a <code>model-ci</code> job to <code>.github/workflows/ci.yml</code> that runs <code>python -m retailpulse.model_ci</code> on every PR. Red blocks the merge, exactly like a failing test.</p></div>
+      <div class="step"><p>Prove it: push a change that makes the forecast worse (drop a feature). Watch the model-CI job go red and block the merge. Restore it, see green, merge.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Register the winning run + promote to Staging</span>import mlflow
+from mlflow.tracking import MlflowClient
+
+client = MlflowClient()
+runs = mlflow.search_runs(
+    experiment_names=["retailpulse-demand-forecast"],
+    order_by=["metrics.rmse ASC"], max_results=1,
+)
+best_run_id = runs.iloc[0]["run_id"]
+
+mv = mlflow.register_model(f"runs:/{best_run_id}/model", "demand_forecast")
+client.transition_model_version_stage(
+    name="demand_forecast", version=mv.version, stage="Staging",
+)
+print(f"registered demand_forecast v{mv.version} -&gt; Staging")</div>
+
+    <div class="prompt-box good"><span class="label">★ model_ci.py - the metric gate</span>import sys
+from retailpulse.train import build_features
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.metrics import mean_squared_error
+
+RMSE_THRESHOLD = 45.0   # a little above current best; catches real regressions
+SEED = 42
+
+def evaluate() -&gt; float:
+    feat = build_features("data/reference_sales.parquet")   # pinned CI slice
+    X_cols = ["lag_1", "roll_3"]
+    train = feat[feat["period"] &lt; "2026-06-01"]
+    test = feat[feat["period"] &gt;= "2026-06-01"]
+    model = GradientBoostingRegressor(random_state=SEED).fit(train[X_cols], train["quantity"])
+    pred = model.predict(test[X_cols])
+    return mean_squared_error(test["quantity"], pred) ** 0.5
+
+if __name__ == "__main__":
+    rmse = evaluate()
+    print(f"model-CI RMSE={rmse:.2f}  threshold={RMSE_THRESHOLD}")
+    if rmse &gt; RMSE_THRESHOLD:
+        print("REGRESSION: model got worse. Blocking merge.")
+        sys.exit(1)
+    print("OK: model within threshold.")</div>
+
+    <div class="prompt-box good"><span class="label">★ Add the model-CI job to .github/workflows/ci.yml</span>  model-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -e ".[dev]"
+      - run: python -m retailpulse.model_ci   # exits 1 if RMSE regresses</div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The refactor that quietly cost 8% accuracy.</strong> An analyst "cleaned up" a feature-engineering function and shipped it - all the unit tests passed, because the code still ran. What the tests could not see was that the forecast got measurably worse. A team with model CI would have caught it on the PR: RMSE crossed the threshold, the job went red, the merge was blocked. Code tests check that it runs; model CI checks that it still works.</p>
+    </div>
+    <div class="callout tip">
+      <strong>☁️ AWS mapping</strong>
+      MLflow is the OSS default here. On AWS, <strong>SageMaker Experiments</strong> plays the Tracking role and the <strong>SageMaker Model Registry</strong> plays the registry role, with model packages moving through approval states instead of stages. Or run MLflow itself on SageMaker and keep this exact code. Either way the concept is unchanged: track everything, register the winner, gate promotion on a metric.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 40-55 min total</span></h2>
+    </div>
+    <ul>
+      <li>Finish both demos if you did not complete them live - especially the deliberately-regressing PR. Everyone should feel model CI block a merge at least once.</li>
+      <li>Run a small sweep: train three versions with different tree depths, compare them in the MLflow UI, and register the best. Note the data version tag on each.</li>
+      <li>Add a second metric - MAPE - to both <code>train.py</code> and the run comparison. Decide which metric you would actually gate on for a demand forecast, and why.</li>
+      <li>Pin a real reference slice for CI: export a fixed, small <code>reference_sales.parquet</code> committed as a sample (synthetic only), so the model-CI number is stable across runs.</li>
+      <li>Optional reading: the MLflow Tracking and Model Registry docs - now a review of what you already built by hand.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This track teaches DataOps on an open-source stack from the tools' official docs, with AWS mapping notes. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Experiment tracking concepts + what to log</span><span class="note">Part 1 · reproducibility, params/metrics/artifacts/data/sha</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">MLflow Tracking + Model Registry docs</span><span class="note">Part 2 + Demo 1/2 · logging, autolog, register, stages</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Model CI + reproducibility discipline</span><span class="note">Part 3 + Demo 2 · seed, pinned data, config, metric gate</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Data versioning (DVC / lakeFS)</span><span class="note">Part 3 self-study · concept + options, not a full tutorial</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">SageMaker Experiments / Model Registry mapping</span><span class="note">Demo 2 sidebar · concept parity, not a full AWS tutorial</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Why log the data version and git sha on every training run?</p>
+      <button class="qopt" type="button">A · MLflow refuses to save a run without them</button>
+      <button class="qopt" type="button">B · They make the model train faster</button>
+      <button class="qopt" type="button">C · Together with a fixed seed they make the run reproducible - you can rebuild the exact number later</button>
+      <p class="qwhy">A metric is only trustworthy if you can recreate it. Data version + git sha + seed pin the three things that otherwise drift and make a run impossible to reproduce.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">2 · What is the difference between MLflow Tracking and the Model Registry?</p>
+      <button class="qopt" type="button">A · They are two names for the same thing</button>
+      <button class="qopt" type="button">B · Tracking records every run so you can compare; the Registry holds named, versioned models moving through Staging/Production stages</button>
+      <button class="qopt" type="button">C · Tracking is paid, the Registry is free</button>
+      <p class="qwhy">Tracking answers "which run was best." The Registry answers "which version is live." Serving and CI point at the registry, not at a random run's file path.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · What does model CI add that code CI (pytest) does not?</p>
+      <button class="qopt" type="button">A · It trains and evaluates the model on a PR and blocks the merge if the metric regresses past a threshold</button>
+      <button class="qopt" type="button">B · It checks that the Python imports resolve</button>
+      <button class="qopt" type="button">C · It formats the code with black</button>
+      <p class="qwhy">Unit tests check that code runs. Model CI checks that it still works - a refactor can pass every test while quietly making the forecast worse. The metric gate catches that.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 5 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Why track</b><span>Modelling is search - dozens of runs. A ledger makes "which was best, can I rebuild it" a lookup, not archaeology.</span></div>
+      <div class="cheat-item"><b>What to log</b><span>Params, metrics (MAE/RMSE), the model artifact, data version, git sha, and the random seed. Every run.</span></div>
+      <div class="cheat-item"><b>MLflow Tracking</b><span>start_run() + log_param/log_metric/log_model, or autolog() for scikit-learn. Compare runs in the UI.</span></div>
+      <div class="cheat-item"><b>Model Registry</b><span>Register the winner as a named model; move versions through None → Staging → Production → Archived.</span></div>
+      <div class="cheat-item"><b>Reproducibility</b><span>Fixed seed + pinned data snapshot + params in config. Without them the metric gate wobbles on noise.</span></div>
+      <div class="cheat-item"><b>Model CI</b><span>Train + evaluate on the PR; exit 1 if RMSE &gt; threshold. Code tests check it runs; model CI checks it still works.</span></div>
+      <div class="cheat-item"><b>AWS mapping</b><span>SageMaker Experiments (tracking) + SageMaker Model Registry, or MLflow on SageMaker. Same loop: track, register, gate.</span></div>
+      <div class="cheat-item"><b>Running project</b><span>RetailPulse v0.5 lives: tracked + registered demand-forecast model with a model-CI gate. Next: b6 deploy + monitor.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 5 of 8 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="b4-dbops-migrations.html">← Prev: DBOps - database migrations</a> &nbsp;·&nbsp; <a href="b6-model-deploy-monitor.html">Next: MLOps II - deploy, monitor, retrain →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

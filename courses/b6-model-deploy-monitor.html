@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 6 · MLOps II: deploy, monitor, retrain - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Builder session 6 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Builder track · Session 6 of 8</div>
+    <h1>MLOps II: <span class="accent">deploy, monitor, retrain</span></h1>
+    <p class="sub">A model in a registry helps no one. Tonight RetailPulse's demand-forecast model goes to work: served behind a FastAPI endpoint, containerized so it runs anywhere, watched for drift as the world changes underneath it, and wired to retrain when the data it sees stops looking like the data it learned from. This is the loop that turns a model from a notebook trophy into a living part of the product.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Builder track · hands-on</span>
+      <span class="chip audience">Practitioners: DA · DE · DS · ML</span>
+      <span class="chip audience">Python 3.10+ · FastAPI · Evidently · MLflow</span>
+      <span class="chip time">Close the loop</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-20 · Serve · monitor · retrain</span>
+      <span class="a3" style="flex:5">20-42 · Build-along: endpoint + drift</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where RetailPulse is tonight</h2>
+    </div>
+    <p class="lede">Last session you gave RetailPulse a demand-forecast model and did it properly: every training run tracked in MLflow, the winner registered as <code>demand_forecast</code> and promoted to Staging, and a model-CI gate that blocks a regressing model from merging. What you do not have yet is a way for anything to actually <em>use</em> that model, or to notice when it quietly goes stale. Tonight closes both gaps and closes the loop back to b5's training code.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill peach">★ Try it now command</span>
+      <span class="pill inkpill">Open-source stack + AWS notes</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A FastAPI <code>/predict</code> endpoint that loads the registered Production model and returns a demand forecast, containerized in a Dockerfile. An Evidently data-drift report that compares recent sales to the training reference. And a drift-triggered retrain rule - an Airflow task that, when drift crosses a threshold, kicks off b5's training run again. That is RetailPulse v0.6, and it is a full MLOps loop.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: BATCH VS ONLINE ============ -->
+  <section class="section" id="serving-modes">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers batch vs online serving</span>
+      <h2>Batch vs online serving <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">There are two ways to get predictions out of a model, and picking wrong makes the whole system awkward. <strong>Batch</strong> scores a big set of rows on a schedule and writes them somewhere. <strong>Online</strong> answers one request at a time over an API, in milliseconds. Most demand-forecast use cases are naturally batch - but the moment someone wants a prediction on demand, you need an endpoint too.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two serving modes: a scheduled batch scoring job writing to a table, and an online REST endpoint answering one request at a time">
+        <style>
+          .b6sT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b6sI { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .b6sL { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .b6sX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b6sN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b6sArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b6sAh); }
+        </style>
+        <defs>
+          <marker id="b6sAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <text class="b6sI" x="30" y="42">Batch scoring</text>
+        <rect x="30" y="56" width="120" height="52" rx="10" fill="#134E4A"/>
+        <text class="b6sT" x="52" y="86">schedule</text>
+        <rect x="200" y="56" width="140" height="52" rx="10" fill="#0F766E"/>
+        <text class="b6sT" x="222" y="80">score all rows</text>
+        <text class="b6sL" x="222" y="98">nightly job</text>
+        <rect x="390" y="56" width="120" height="52" rx="10" fill="#14B8A6"/>
+        <text class="b6sI" x="412" y="80">forecasts</text>
+        <text class="b6sI" x="412" y="98" font-weight="400" font-size="11">written to table</text>
+        <line class="b6sArr" x1="152" y1="82" x2="198" y2="82"/>
+        <line class="b6sArr" x1="342" y1="82" x2="388" y2="82"/>
+        <text class="b6sX" x="30" y="132">fits: weekly restock plan for every product/region at once</text>
+        <text class="b6sI" x="30" y="182">Online serving</text>
+        <rect x="30" y="196" width="120" height="52" rx="10" fill="#134E4A"/>
+        <text class="b6sT" x="52" y="220">request</text>
+        <text class="b6sL" x="52" y="238">one product</text>
+        <rect x="200" y="196" width="140" height="52" rx="10" fill="#0F766E"/>
+        <text class="b6sT" x="222" y="220">REST endpoint</text>
+        <text class="b6sL" x="222" y="238">/predict · ms</text>
+        <rect x="390" y="196" width="120" height="52" rx="10" fill="#2DD4BF"/>
+        <text class="b6sI" x="412" y="220">one answer</text>
+        <text class="b6sI" x="412" y="238" font-weight="400" font-size="11">in the response</text>
+        <line class="b6sArr" x1="152" y1="222" x2="198" y2="222"/>
+        <line class="b6sArr" x1="342" y1="222" x2="388" y2="222"/>
+        <text class="b6sX" x="560" y="150">RetailPulse ships an online</text>
+        <text class="b6sX" x="560" y="170">FastAPI endpoint, with a</text>
+        <text class="b6sX" x="560" y="190">batch option for the weekly plan.</text>
+        <rect x="30" y="256" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b6sN" x="54" y="268">Pick by the question: "score everything on a cadence" = batch; "answer this one now" = online.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - batch scoring on a schedule versus an online endpoint per request</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>When each mode fits - and why RetailPulse picks online<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The two modes are not rivals; they answer different questions:</p>
+        <ul>
+          <li><strong>Batch scoring:</strong> a scheduled job scores a large set at once and writes results to a table or file. Cheap, simple, no live infrastructure. Perfect when consumers read predictions on their own cadence - a nightly demand forecast feeding tomorrow's restock plan.</li>
+          <li><strong>Online serving:</strong> a REST endpoint returns a prediction per request in milliseconds. Needed when the answer is required interactively - a planner tweaks an assumption in a dashboard and wants the forecast to update now.</li>
+          <li><strong>Latency vs throughput:</strong> batch optimizes throughput (millions of rows, minutes are fine); online optimizes latency (one row, milliseconds matter).</li>
+          <li><strong>RetailPulse's choice:</strong> we build the online FastAPI endpoint tonight because it is the harder, more reusable pattern - and we note the batch option, which is just calling the same model inside a scheduled Airflow task like the one from b2.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The endpoint that should have been a batch job.</strong> A team wrapped a demand model in a low-latency service that got called once a night by a single scheduled report. They paid for an always-on endpoint, health checks, and autoscaling to serve one request a day. The forecast never needed to be online - a batch job writing to a table would have been a tenth of the cost and half the pages. Match the serving mode to how the prediction is actually consumed.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Where features come from at serving time<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A subtle trap: the model was trained on features like <code>lag_1</code> and <code>roll_3</code>, computed from history. At serving time those features must be computed the exact same way, or you get training/serving skew - the model sees inputs it never learned on. For batch this is easy: the same feature code runs over the same table. For online it is harder: the request must either carry the features or the endpoint must look them up. Tonight the request carries them, which keeps the demo honest; a feature store (like feast) is the grown-up answer when lookups get complex.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: FASTAPI + DOCKER ============ -->
+  <section class="section" id="serve">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers FastAPI serving + containerization</span>
+      <h2>Serve the model with FastAPI + Docker <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">An online endpoint is a small, well-behaved web service: a request comes in, you validate it, load the registered Production model, predict, and return the number. FastAPI gives you typed request validation for free via Pydantic, and Docker - the same skill from b1 - makes the service run identically on your laptop, in CI, and in prod.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A request hits the FastAPI predict route, which loads the registered production model, validates input, and returns a prediction">
+        <style>
+          .b6vT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b6vI { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .b6vL { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .b6vX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b6vN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b6vArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b6vAh); }
+        </style>
+        <defs>
+          <marker id="b6vAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="24" y="80" width="140" height="60" rx="12" fill="#134E4A"/>
+        <text class="b6vT" x="46" y="106">Request</text>
+        <text class="b6vL" x="46" y="126">product · region · lags</text>
+        <rect x="214" y="80" width="150" height="60" rx="12" fill="#0F766E"/>
+        <text class="b6vT" x="236" y="106">FastAPI /predict</text>
+        <text class="b6vL" x="236" y="126">Pydantic validates</text>
+        <rect x="414" y="80" width="160" height="60" rx="12" fill="#14B8A6"/>
+        <text class="b6vT" x="436" y="106">Load model</text>
+        <text class="b6vL" x="436" y="126">registry: Production</text>
+        <rect x="624" y="80" width="150" height="60" rx="12" fill="#2DD4BF"/>
+        <text class="b6vI" x="646" y="106">Prediction</text>
+        <text class="b6vI" x="646" y="126" font-weight="400" font-size="11">units next period</text>
+        <line class="b6vArr" x1="166" y1="110" x2="212" y2="110"/>
+        <line class="b6vArr" x1="366" y1="110" x2="412" y2="110"/>
+        <line class="b6vArr" x1="576" y1="110" x2="622" y2="110"/>
+        <rect x="204" y="60" width="580" height="100" rx="16" fill="none" stroke="#99F6E4" stroke-width="2" stroke-dasharray="6 4"/>
+        <text class="b6vX" x="214" y="184">all of this ships inside one Docker container - same image local, CI, prod</text>
+        <rect x="24" y="210" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b6vN" x="48" y="222">Load the Production model by name, not a file path - promoting a new version needs zero code change.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - request → validate → load registered model → predict, all containerized</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Load from the registry, validate the input, return the number<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Three design choices make this endpoint production-grade rather than a toy:</p>
+        <ul>
+          <li><strong>Load by registry reference, not a path:</strong> ask MLflow for <code>models:/demand_forecast/Production</code>. When you promote a new version in the registry (the b5 skill), the endpoint picks it up on restart - no code change, no redeploy of new logic.</li>
+          <li><strong>Validate with Pydantic:</strong> the request body is a typed model. A missing field or a string where a number belongs gets a clean 422 error, not a stack trace deep in the predict call. Bad input never reaches the model.</li>
+          <li><strong>Load once, not per request:</strong> load the model at startup and keep it in memory. Loading on every request would add hundreds of milliseconds and hammer the registry.</li>
+          <li><strong>Containerize:</strong> wrap it in the same <code>python:3.11-slim</code> Docker pattern from b1. The image is the unit you deploy to ECS, a VM, or Kubernetes.</li>
+        </ul>
+        <div class="prompt-box good"><span class="label">★ Try it now (after building the app)</span>uvicorn retailpulse.serve:app --reload
+curl -s localhost:8000/predict -H "content-type: application/json" \
+  -d '{"product":"widget-A","region":"north","lag_1":120,"roll_3":110}'
+# expect: {"units_next_period": ...}</div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: MONITOR + RETRAIN ============ -->
+  <section class="section" id="monitor">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers drift detection + retrain triggers</span>
+      <h2>Monitor for drift and retrain <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">A deployed model degrades not because the code breaks but because the world moves. Last quarter's buying patterns are not this quarter's. Monitoring watches the live data and predictions, detects when they have drifted away from what the model was trained on, and triggers a retrain before the forecast quietly rots. This is the piece that makes the loop a loop.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Production data drifts away from the training distribution over time; drift detection fires a threshold check that triggers retraining">
+        <style>
+          .b6dT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b6dI { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .b6dL { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .b6dX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b6dN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b6dArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b6dAh); }
+          .b6dCurve { fill: none; stroke-width: 3; }
+        </style>
+        <defs>
+          <marker id="b6dAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="24" y="40" width="360" height="150" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <path class="b6dCurve" stroke="#0F766E" d="M60 150 C 110 60, 170 60, 220 150"/>
+        <text class="b6dI" x="120" y="176" font-size="12" fill="#0F766E">training</text>
+        <path class="b6dCurve" stroke="#F59E0B" stroke-dasharray="6 4" d="M180 150 C 240 70, 300 70, 350 150"/>
+        <text class="b6dN" x="278" y="176" font-size="12">recent</text>
+        <text class="b6dX" x="44" y="70">distribution shifts over time = drift</text>
+        <rect x="430" y="70" width="160" height="90" rx="12" fill="#0F766E"/>
+        <text class="b6dT" x="452" y="102">Drift detection</text>
+        <text class="b6dL" x="452" y="126">Evidently report</text>
+        <text class="b6dL" x="452" y="146">drift share = 0.6</text>
+        <rect x="650" y="45" width="200" height="52" rx="12" fill="#F59E0B"/>
+        <text class="b6dN" x="672" y="70" fill="#431407">share &gt; 0.5 threshold?</text>
+        <text class="b6dN" x="672" y="88" fill="#431407" font-weight="400" font-size="12">yes → trigger</text>
+        <rect x="650" y="118" width="200" height="52" rx="12" fill="#14B8A6"/>
+        <text class="b6dI" x="672" y="144">Retrain (b5 training)</text>
+        <text class="b6dI" x="672" y="162" font-weight="400" font-size="11">new run → registry</text>
+        <line class="b6dArr" x1="384" y1="115" x2="428" y2="115"/>
+        <line class="b6dArr" x1="590" y1="105" x2="648" y2="80"/>
+        <line class="b6dArr" x1="750" y1="97" x2="750" y2="116"/>
+        <path class="b6dArr" d="M650 150 C 500 220, 300 220, 200 190"/>
+        <text class="b6dX" x="360" y="238">retrain feeds a fresh model back to the registry - the loop closes</text>
+        <rect x="24" y="230" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b6dN" x="48" y="242">Drift is the smoke alarm; retraining is the response. Detect automatically, decide deliberately.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - drift detected against the training reference triggers a retrain that closes the loop</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Data drift vs concept drift, and monitoring with Evidently<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Two different things go wrong after deployment, and it helps to name them:</p>
+        <ul>
+          <li><strong>Data drift:</strong> the input distribution changes. A new product line, a promotion, a seasonal shift - the features arriving now look statistically different from the training features. The model may still be right in principle, but it is extrapolating.</li>
+          <li><strong>Concept drift:</strong> the relationship between inputs and target changes. The same features now imply different demand - a change in customer behaviour, a competitor, a price war. Even perfect input monitoring will not catch this directly; you catch it by watching prediction quality against actuals.</li>
+          <li><strong>Monitoring with Evidently:</strong> the open-source default. Point it at a <em>reference</em> dataset (your training data) and a <em>current</em> dataset (recent production data) and it produces a data-drift report - per-feature drift and an overall drift share - plus prediction monitoring. It is the measuring instrument; your threshold is the decision.</li>
+        </ul>
+        <table class="clean">
+          <thead><tr><th>What drifted</th><th>How you notice</th><th>Response</th></tr></thead>
+          <tbody>
+            <tr><td>Input features (data drift)</td><td>Evidently drift share crosses threshold</td><td>Retrain on recent data</td></tr>
+            <tr><td>Input→target link (concept drift)</td><td>Live RMSE vs actuals degrades</td><td>Retrain, maybe re-feature</td></tr>
+            <tr><td>Nothing - just noise</td><td>Drift share below threshold</td><td>Do nothing; do not chase noise</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Retrain triggers: scheduled vs metric vs drift<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>There are three honest ways to decide when to retrain, and mature teams combine them:</p>
+        <ul>
+          <li><strong>Scheduled:</strong> retrain every week or month regardless. Dead simple, predictable, but wasteful when nothing changed and too slow when something changes fast.</li>
+          <li><strong>Metric-based:</strong> retrain when live prediction quality (RMSE against actuals, once they arrive) drops past a threshold. Directly tied to what you care about, but needs ground-truth labels, which lag.</li>
+          <li><strong>Drift-based:</strong> retrain when input drift crosses a threshold - the earliest signal, available before labels do. What you build tonight. The risk is chasing drift that does not actually hurt accuracy, so pair it with the metric check when labels arrive.</li>
+        </ul>
+        <p>Whichever trigger fires, it should call the <em>same</em> training code from b5 - tracked, evaluated, gated by model CI, and registered. Retraining is not a special path; it is the b5 pipeline run again on newer data.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>A FastAPI prediction service <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">Build <code>serve.py</code>: a FastAPI app that loads the registered Production demand-forecast model once at startup, exposes a typed <code>/predict</code> route, and returns the forecast. Then containerize it with the b1 Docker pattern and hit it with curl.</p>
+
+    <div class="steps">
+      <div class="step"><p>Add <code>fastapi</code>, <code>uvicorn</code>, and <code>pydantic</code> to <code>pyproject.toml</code>. Create <code>src/retailpulse/serve.py</code>.</p></div>
+      <div class="step"><p>At module load, pull the model from the registry: <code>mlflow.pyfunc.load_model("models:/demand_forecast/Production")</code>. Load once, reuse across requests.</p></div>
+      <div class="step"><p>Define a Pydantic <code>ForecastRequest</code> with the fields the model needs - <code>product</code>, <code>region</code>, <code>lag_1</code>, <code>roll_3</code>. FastAPI validates and rejects bad input automatically.</p></div>
+      <div class="step"><p>Write the <code>POST /predict</code> route: turn the request into a one-row DataFrame, call <code>model.predict</code>, return the number as JSON. Add a <code>GET /health</code> that returns ok.</p></div>
+      <div class="step"><p>Run it with <code>uvicorn</code>, curl the endpoint, then write the Dockerfile and <code>docker build &amp;&amp; docker run -p 8000:8000</code>. Same prediction, now in a container.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ RetailPulse v0.6 - serve.py, the prediction service</span>import mlflow.pyfunc
+import pandas as pd
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI(title="RetailPulse demand forecast")
+MODEL = mlflow.pyfunc.load_model("models:/demand_forecast/Production")  # load once
+
+class ForecastRequest(BaseModel):
+    product: str
+    region: str
+    lag_1: float
+    roll_3: float
+
+@app.get("/health")
+def health() -&gt; dict:
+    return {"status": "ok"}
+
+@app.post("/predict")
+def predict(req: ForecastRequest) -&gt; dict:
+    X = pd.DataFrame([{"lag_1": req.lag_1, "roll_3": req.roll_3}])
+    units = float(MODEL.predict(X)[0])
+    return {"product": req.product, "region": req.region,
+            "units_next_period": round(units, 1)}</div>
+
+    <div class="prompt-box good"><span class="label">★ Dockerfile.serve - containerize the endpoint</span>FROM python:3.11-slim
+WORKDIR /app
+COPY pyproject.toml .
+RUN pip install --no-cache-dir -e ".[serve]"
+COPY src/ src/
+EXPOSE 8000
+CMD ["uvicorn", "retailpulse.serve:app", "--host", "0.0.0.0", "--port", "8000"]</div>
+
+    <div class="callout tip">
+      <strong>Serving tip</strong>
+      Never hardcode a model version in the endpoint. Loading <code>models:/demand_forecast/Production</code> means promoting a new version in the MLflow registry - the b5 workflow - is the entire deploy. The endpoint just needs a restart, and rollback is re-promoting the previous version. Same code, no scramble.
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Drift monitoring + retrain trigger <span class="tag demo">★ 10 min · build your own</span></h2>
+    </div>
+    <p class="lede">Generate an Evidently data-drift report comparing recent sales to the training reference, then write a rule that triggers a retrain when the drift share crosses a threshold - as an Airflow task that calls b5's training code. This is the last link that turns RetailPulse into a self-healing loop.</p>
+
+    <div class="steps">
+      <div class="step"><p>Add <code>evidently</code> to <code>pyproject.toml</code>. Create <code>monitor.py</code> with two frames: <code>reference</code> (the training slice) and <code>current</code> (recent production sales, same feature columns).</p></div>
+      <div class="step"><p>Run Evidently's <code>DataDriftPreset</code> over the two frames. Save the HTML report as an artifact and pull the overall <strong>drift share</strong> out of the report as a number.</p></div>
+      <div class="step"><p>Write the trigger rule: if <code>drift_share &gt; 0.5</code>, return "retrain"; else "hold". This is deliberately simple and legible - a threshold you can defend.</p></div>
+      <div class="step"><p>Wrap it in an Airflow task (reusing the b2 DAG). A <code>drift_check</code> task runs the report on a schedule; a <code>BranchPythonOperator</code> routes to a <code>retrain</code> task when drift is high.</p></div>
+      <div class="step"><p>Make <code>retrain</code> call b5's <code>train.main()</code> on the newer data. The new run is tracked, gated by model CI, and registered - closing the loop back to session 5.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ monitor.py - Evidently drift report + trigger rule</span>import pandas as pd
+from evidently.report import Report
+from evidently.metric_preset import DataDriftPreset
+
+DRIFT_THRESHOLD = 0.5   # share of drifted features that triggers a retrain
+
+def drift_share(reference_path: str, current_path: str) -&gt; float:
+    ref = pd.read_parquet(reference_path)[["lag_1", "roll_3"]]
+    cur = pd.read_parquet(current_path)[["lag_1", "roll_3"]]
+    report = Report(metrics=[DataDriftPreset()])
+    report.run(reference_data=ref, current_data=cur)
+    report.save_html("artifacts/drift_report.html")
+    result = report.as_dict()["metrics"][0]["result"]
+    return result["share_of_drifted_columns"]
+
+def should_retrain(reference_path: str, current_path: str) -&gt; str:
+    share = drift_share(reference_path, current_path)
+    print(f"drift share = {share:.2f}  threshold = {DRIFT_THRESHOLD}")
+    return "retrain" if share &gt; DRIFT_THRESHOLD else "hold"</div>
+
+    <div class="prompt-box good"><span class="label">★ retrain_dag.py - drift check branches to retrain (Airflow)</span>from airflow import DAG
+from airflow.operators.python import BranchPythonOperator, PythonOperator
+from datetime import datetime
+from retailpulse.monitor import should_retrain
+from retailpulse import train
+
+def check(**_):
+    return should_retrain("data/reference_sales.parquet", "data/recent_sales.parquet")
+
+with DAG("retailpulse_retrain", start_date=datetime(2026, 7, 1),
+         schedule="@weekly", catchup=False) as dag:
+    drift_check = BranchPythonOperator(task_id="drift_check", python_callable=check)
+    retrain = PythonOperator(task_id="retrain", python_callable=train.main)  # back to b5
+    hold = PythonOperator(task_id="hold", python_callable=lambda: print("no drift"))
+    drift_check &gt;&gt; [retrain, hold]</div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The model that was right until the promotion.</strong> A retailer's demand forecast performed well for months, then a big seasonal promotion changed buying patterns overnight. Nobody was watching the inputs, so the model kept confidently under-forecasting for three weeks - and stores kept running out. A drift report would have flagged the shift in days, triggered a retrain on the new pattern, and closed the gap. The model was never "broken"; the world moved and nothing noticed.</p>
+    </div>
+    <div class="callout tip">
+      <strong>☁️ AWS mapping</strong>
+      Evidently and FastAPI are the OSS defaults here. On AWS, a <strong>SageMaker real-time endpoint</strong> serves the model, <strong>SageMaker Model Monitor</strong> runs the drift detection on a schedule, and <strong>EventBridge</strong> catches the drift alarm and triggers a retraining pipeline (Step Functions or a SageMaker Pipeline). Different buttons, identical loop: serve, watch for drift, retrain, re-register.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 40-55 min total</span></h2>
+    </div>
+    <ul>
+      <li>Finish both demos if you did not complete them live - especially the drift-to-retrain branch. Everyone should watch drift trigger a fresh, registered model at least once.</li>
+      <li>Add a <code>/predict/batch</code> route to the FastAPI app that scores a list of rows, so RetailPulse has both serving modes from Part 1.</li>
+      <li>Force drift: shift the <code>current</code> data (add a promotion spike) and confirm the drift share crosses the threshold and the DAG branches to retrain.</li>
+      <li>Wire the endpoint's model load to a <code>/health</code> check that also reports the loaded model version, so you always know what is live.</li>
+      <li>Optional reading: the FastAPI and Evidently docs, plus MLflow's model-serving guide - now a review of what you built by hand.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This track teaches DataOps on an open-source stack from the tools' official docs, with AWS mapping notes. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Batch vs online serving concepts</span><span class="note">Part 1 · when each fits, feature-at-serving skew</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">FastAPI + Docker model serving</span><span class="note">Part 2 + Demo 1 · registry load, Pydantic, containerize</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Drift detection + retrain triggers (Evidently)</span><span class="note">Part 3 + Demo 2 · data vs concept drift, drift-based retrain</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Feature stores at serving time (feast)</span><span class="note">Part 1 self-study · concept only, not a full tutorial</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">SageMaker endpoints / Model Monitor / EventBridge</span><span class="note">Demo 2 sidebar · concept parity, not a full AWS tutorial</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · When is batch scoring the right serving mode instead of an online endpoint?</p>
+      <button class="qopt" type="button">A · Whenever the model is a regressor</button>
+      <button class="qopt" type="button">B · Only when the model is very small</button>
+      <button class="qopt" type="button">C · When predictions are consumed on a cadence - score everything on a schedule and write results to a table</button>
+      <p class="qwhy">Batch optimizes throughput for scheduled consumption; online optimizes latency for interactive requests. Match the mode to how the prediction is actually used, not to the model type.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · Why load the model as <code>models:/demand_forecast/Production</code> rather than a fixed file path?</p>
+      <button class="qopt" type="button">A · Promoting a new version in the registry becomes the deploy - the endpoint picks it up with no code change, and rollback is re-promoting the old version</button>
+      <button class="qopt" type="button">B · File paths are not allowed in FastAPI</button>
+      <button class="qopt" type="button">C · It makes predictions more accurate</button>
+      <p class="qwhy">Loading by registry stage decouples the serving code from any specific model version. Deploy and rollback happen in the registry, not in a redeploy of new logic.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · What is the difference between data drift and concept drift?</p>
+      <button class="qopt" type="button">A · Data drift happens in training, concept drift happens in production</button>
+      <button class="qopt" type="button">B · Data drift is the input distribution changing; concept drift is the input→target relationship changing</button>
+      <button class="qopt" type="button">C · They are two names for the same failure</button>
+      <p class="qwhy">Data drift you catch by comparing input distributions (Evidently). Concept drift you catch by watching prediction quality against actuals - the same inputs now imply different demand.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 6 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Two serving modes</b><span>Batch = score everything on a schedule, write to a table. Online = REST endpoint, one answer in ms. Match to consumption.</span></div>
+      <div class="cheat-item"><b>FastAPI endpoint</b><span>Pydantic validates input; load the model once at startup; return JSON. Wrap it in the b1 Docker image.</span></div>
+      <div class="cheat-item"><b>Load by registry stage</b><span>models:/demand_forecast/Production. Promote in the registry = deploy; re-promote old version = rollback. No code change.</span></div>
+      <div class="cheat-item"><b>Data vs concept drift</b><span>Data drift = inputs shift (catch with Evidently). Concept drift = input→target shifts (catch via RMSE vs actuals).</span></div>
+      <div class="cheat-item"><b>Monitor with Evidently</b><span>Reference (training) vs current (recent) → data-drift report + drift share. The instrument; your threshold is the decision.</span></div>
+      <div class="cheat-item"><b>Retrain triggers</b><span>Scheduled (simple), metric-based (needs labels), drift-based (earliest signal). Combine them; all call b5's training code.</span></div>
+      <div class="cheat-item"><b>AWS mapping</b><span>SageMaker real-time endpoint (serve) + Model Monitor (drift) + EventBridge (trigger retrain). Same loop, different buttons.</span></div>
+      <div class="cheat-item"><b>Running project</b><span>RetailPulse v0.6 lives: served, monitored, self-retraining forecast. Next: b7 observability + IaC.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 6 of 8 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="b5-experiment-tracking.html">← Prev: MLOps I - tracking + registry</a> &nbsp;·&nbsp; <a href="b7-observability-iac.html">Next: Observability, secrets and IaC →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

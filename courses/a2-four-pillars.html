@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 2 · Four pillars, four business risks - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Leader session 2 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Leader track · Session 2 of 6</div>
+    <h1>Four pillars, <span class="accent">four business risks</span></h1>
+    <p class="sub">DataOps is often sold as four technical pillars, and leaders' eyes glaze over. So we flip it. Each pillar exists to retire one specific business risk you can put a number against and budget for. This session, no code: what the four pillars actually guard, which risk each one buys down, and the order most organizations should fund them in. You leave able to say which pillar your money should touch first, and why.</p>
+    <div class="chip-row">
+      <span class="chip level">🤝 Leader track</span>
+      <span class="chip audience">C-level · managers · data leads</span>
+      <span class="chip audience">No code, ever</span>
+      <span class="chip time">Medium depth</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:5">3-30 · Pillars and risks</span>
+      <span class="a3" style="flex:4">30-42 · Boardroom exercise</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where we are</h2>
+    </div>
+    <p class="lede">In session 1 we named the reliability tax - the hidden cost of fragile data - and defined DataOps as DevOps automation plus Agile delivery plus lean quality, pointed at the whole data and machine-learning lifecycle. This session zooms in on the machinery. DataOps has four pillars, and every one of them is really an insurance policy against a particular way your data can hurt the business. We keep the language plain and the map on one page.</p>
+    <div class="legend">
+      <span class="pill solid">Live - discussed in session</span>
+      <span class="pill light">Self-study - read after</span>
+      <span class="pill peach">★ Questions for your team</span>
+      <span class="pill inkpill">Strategy, not tooling</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A one-line translation of each of the four DataOps pillars into the business risk it retires, a mental model of where in the pipeline each pillar stands guard, a defensible view on which pillar to fund first, and a short set of questions that reveal which risks your organization is currently carrying uninsured.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE PIPELINE IN FOUR ZONES ============ -->
+  <section class="section" id="pipeline">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the mental model</span>
+      <h2>The data pipeline, in four zones <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Before we talk pillars, picture where data actually goes. It flows through four zones, left to right, and each pillar stands guard over a different stretch. You do not need to know the tools - you need to know that a change or a failure in each zone hits the business differently.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Data flows through four zones - ingest, transform, serve, model and decide - and each of the four DataOps pillars guards one part of that flow">
+        <style>
+          .a2pT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a2pX { font: 400 11.5px Inter, sans-serif; fill: #CCFBF1; }
+          .a2pI { font: 700 12.5px Inter, sans-serif; fill: #0F172A; }
+          .a2pM { font: 400 11.5px Inter, sans-serif; fill: #64748B; }
+          .a2pN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .a2pArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#a2pAh); }
+        </style>
+        <defs>
+          <marker id="a2pAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="24" y="40" width="185" height="58" rx="12" fill="#134E4A"/>
+        <text class="a2pT" x="44" y="66">Ingest</text>
+        <text class="a2pX" x="44" y="86">raw data arrives</text>
+        <rect x="230" y="40" width="185" height="58" rx="12" fill="#0F766E"/>
+        <text class="a2pT" x="250" y="66">Transform</text>
+        <text class="a2pX" x="250" y="86">cleaned and joined</text>
+        <rect x="436" y="40" width="185" height="58" rx="12" fill="#14B8A6"/>
+        <text class="a2pT" x="456" y="66">Serve</text>
+        <text class="a2pX" x="456" y="86">tables and dashboards</text>
+        <rect x="642" y="40" width="214" height="58" rx="12" fill="#2DD4BF"/>
+        <text class="a2pI" x="662" y="66">Model and decide</text>
+        <text class="a2pM" x="662" y="86" fill="#134E4A">predictions drive action</text>
+        <line class="a2pArr" x1="211" y1="69" x2="228" y2="69"/>
+        <line class="a2pArr" x1="417" y1="69" x2="434" y2="69"/>
+        <line class="a2pArr" x1="623" y1="69" x2="640" y2="69"/>
+        <rect x="24" y="140" width="185" height="70" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a2pI" x="44" y="166">DevOps basics</text>
+        <text class="a2pM" x="44" y="186">guards every release</text>
+        <text class="a2pM" x="44" y="202">across all four zones</text>
+        <rect x="230" y="140" width="185" height="70" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a2pI" x="250" y="166">Data CI/CD</text>
+        <text class="a2pM" x="250" y="186">tests the transform</text>
+        <text class="a2pM" x="250" y="202">and serve zones</text>
+        <rect x="436" y="140" width="185" height="70" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a2pI" x="456" y="166">DBOps</text>
+        <text class="a2pM" x="456" y="186">guards schema change</text>
+        <text class="a2pM" x="456" y="202">under serve</text>
+        <rect x="642" y="140" width="214" height="70" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a2pI" x="662" y="166">MLOps</text>
+        <text class="a2pM" x="662" y="186">watches the model</text>
+        <text class="a2pM" x="662" y="202">and its decisions</text>
+        <line x1="116" y1="100" x2="116" y2="138" stroke="#5EEAD4" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <line x1="322" y1="100" x2="322" y2="138" stroke="#5EEAD4" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <line x1="528" y1="100" x2="528" y2="138" stroke="#5EEAD4" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <line x1="749" y1="100" x2="749" y2="138" stroke="#5EEAD4" stroke-width="2.5" stroke-dasharray="4 3"/>
+        <rect x="24" y="268" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a2pN" x="46" y="280">Same flow, four guards. Each pillar covers a different stretch - and a different way the business gets hurt.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - where each pillar stands guard along the data flow</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Reading the map<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Data does not appear on a dashboard by magic. It travels, and the journey is the same in almost every organization:</p>
+        <ul>
+          <li><strong>Ingest:</strong> raw data lands from source systems - your app, your sales tool, a partner feed. If ingestion is fragile, everything downstream inherits the fragility.</li>
+          <li><strong>Transform:</strong> raw data is cleaned, joined, and shaped into something usable. This is where most "wrong number" bugs are actually born, because a small logic slip here quietly corrupts every report built on top.</li>
+          <li><strong>Serve:</strong> the shaped data is published as tables, metrics, and dashboards people rely on. Changes to the structure here can break the reports leaders open every morning.</li>
+          <li><strong>Model and decide:</strong> some of that data feeds a machine-learning model whose predictions drive real action - pricing, targeting, approvals. When the world shifts and the model does not, decisions quietly get worse.</li>
+        </ul>
+        <p>The four pillars line up against these zones. You do not fund "DataOps" in the abstract. You fund a specific guard over a specific stretch of this flow, because that stretch carries a specific risk.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: FOUR PILLARS, FOUR RISKS ============ -->
+  <section class="section" id="pillars">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the core of the session</span>
+      <h2>Four pillars, four risks <span class="tag concept">10 min live</span></h2>
+    </div>
+    <p class="lede">Here is the translation table every leader should carry. On the left, the technical pillar your engineers name. On the right, the plain business risk it retires - the reason it deserves budget. Read it right-to-left if you like: pick the risk that scares you most, and it points to the pillar to fund.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The pillar-to-risk map<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Pillar (what engineers call it)</th><th>What it does, plainly</th><th>Business risk it retires</th></tr></thead>
+          <tbody>
+            <tr><td>DevOps basics</td><td>Puts every change in version control and gives it one automated, reviewed path to production</td><td><strong>Delivery risk</strong> - slow, scary, manual releases where each change is a gamble</td></tr>
+            <tr><td>Data CI/CD (orchestration + testing)</td><td>Runs pipelines on a schedule and tests the data at each step before it reaches anyone</td><td><strong>Quality and trust risk</strong> - wrong numbers reach a leader and quietly poison decisions</td></tr>
+            <tr><td>DBOps (schema migrations)</td><td>Manages structural database changes so tables evolve without surprises</td><td><strong>Downtime and breakage risk</strong> - a schema change takes production reports down</td></tr>
+            <tr><td>MLOps</td><td>Deploys, monitors, and refreshes machine-learning models over their whole life</td><td><strong>Model-decay risk</strong> - a stale model keeps running and quietly makes worse decisions</td></tr>
+          </tbody>
+        </table>
+        <div class="callout tip">
+          <strong>The reframe to remember</strong>
+          You are never really buying a pillar. You are buying down a risk. When a pillar cannot name the business risk it retires, it does not belong in the budget yet.
+        </div>
+      </div>
+    </details>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four columns, one per pillar, each showing the business risk it retires">
+        <style>
+          .a2rH { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .a2rS { font: 400 11px Inter, sans-serif; fill: #CCFBF1; }
+          .a2rR { font: 700 12.5px Inter, sans-serif; fill: #0F172A; }
+          .a2rM { font: 400 11px Inter, sans-serif; fill: #64748B; }
+          .a2rN { font: 600 14px Inter, sans-serif; fill: #431407; }
+        </style>
+        <rect x="24" y="34" width="196" height="66" rx="12" fill="#134E4A"/>
+        <text class="a2rH" x="42" y="62">DevOps basics</text>
+        <text class="a2rS" x="42" y="82">version control, one</text>
+        <text class="a2rS" x="42" y="96">release path</text>
+        <rect x="236" y="34" width="196" height="66" rx="12" fill="#0F766E"/>
+        <text class="a2rH" x="254" y="62">Data CI/CD</text>
+        <text class="a2rS" x="254" y="82">orchestration and</text>
+        <text class="a2rS" x="254" y="96">automated testing</text>
+        <rect x="448" y="34" width="196" height="66" rx="12" fill="#14B8A6"/>
+        <text class="a2rH" x="466" y="62">DBOps</text>
+        <text class="a2rS" x="466" y="82">safe schema</text>
+        <text class="a2rS" x="466" y="96">migrations</text>
+        <rect x="660" y="34" width="196" height="66" rx="12" fill="#0F766E"/>
+        <text class="a2rH" x="678" y="62">MLOps</text>
+        <text class="a2rS" x="678" y="82">deploy and monitor</text>
+        <text class="a2rS" x="678" y="96">models</text>
+        <line x1="122" y1="100" x2="122" y2="150" stroke="#CBD5E1" stroke-width="2.5"/>
+        <line x1="334" y1="100" x2="334" y2="150" stroke="#CBD5E1" stroke-width="2.5"/>
+        <line x1="546" y1="100" x2="546" y2="150" stroke="#CBD5E1" stroke-width="2.5"/>
+        <line x1="758" y1="100" x2="758" y2="150" stroke="#CBD5E1" stroke-width="2.5"/>
+        <text x="122" y="128" class="a2rM" text-anchor="middle" fill="#134E4A" font-weight="700">retires</text>
+        <text x="334" y="128" class="a2rM" text-anchor="middle" fill="#134E4A" font-weight="700">retires</text>
+        <text x="546" y="128" class="a2rM" text-anchor="middle" fill="#134E4A" font-weight="700">retires</text>
+        <text x="758" y="128" class="a2rM" text-anchor="middle" fill="#134E4A" font-weight="700">retires</text>
+        <rect x="24" y="152" width="196" height="80" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a2rR" x="42" y="180">Delivery risk</text>
+        <text class="a2rM" x="42" y="202">slow, risky releases;</text>
+        <text class="a2rM" x="42" y="220">every change a gamble</text>
+        <rect x="236" y="152" width="196" height="80" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a2rR" x="254" y="180">Quality and trust</text>
+        <text class="a2rM" x="254" y="202">wrong numbers reach</text>
+        <text class="a2rM" x="254" y="220">a decision-maker</text>
+        <rect x="448" y="152" width="196" height="80" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a2rR" x="466" y="180">Downtime</text>
+        <text class="a2rM" x="466" y="202">a schema change</text>
+        <text class="a2rM" x="466" y="220">takes prod down</text>
+        <rect x="660" y="152" width="196" height="80" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a2rR" x="678" y="180">Model decay</text>
+        <text class="a2rM" x="678" y="202">stale model makes</text>
+        <text class="a2rM" x="678" y="220">worse calls quietly</text>
+        <rect x="24" y="268" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a2rN" x="46" y="280">Every pillar earns its budget by the named risk it retires. No risk, no line item.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - each pillar and the single business risk it retires</figcaption>
+    </figure>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The schema change that went dark.</strong> A retailer renamed one column in a core table on a Friday afternoon - a five-minute "cleanup". No DBOps guard, no staged migration. Every executive dashboard that read that column broke silently over the weekend, and Monday's regional review ran on blank charts. The fix took minutes; the lost trust took a quarter. That is downtime and breakage risk, and DBOps is the pillar that would have caught it before it shipped.</p>
+    </div>
+  </section>
+
+  <!-- ============ PART 3: WHICH PILLAR FIRST ============ -->
+  <section class="section" id="sequencing">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · sequencing the spend</span>
+      <h2>Which pillar to fund first <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">You will not build all four pillars at once, and you should not try. There is a sensible order that most organizations follow, because it earns trust early and cheaply before you spend on the heavier pillars.</p>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The usual funding order<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The sequence below is not a law, but it is a strong default. Each step makes the next one cheaper and safer:</p>
+        <ul>
+          <li><strong>First: DevOps basics plus data testing.</strong> Get every pipeline into version control and add basic quality tests. This is the fastest trust win - it costs little and immediately reduces both delivery risk and the odds of a wrong number reaching a leader. It also makes everything after it possible.</li>
+          <li><strong>Then: orchestration.</strong> Once changes are safe, automate when and how pipelines run, so runs are scheduled, monitored, and re-runnable instead of triggered by hand. This is where data CI/CD becomes real.</li>
+          <li><strong>Then, as you scale: DBOps and MLOps.</strong> DBOps matters once your database structures change often enough to be dangerous. MLOps matters once you have models making real decisions that can decay. Fund these when the risk they retire is actually present - not before.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The sequencing rule</strong>
+          Buy the cheapest trust first. DevOps basics and data testing give the biggest reduction in risk per dollar, so they lead. Fund DBOps and MLOps when the matching risk shows up in your business, not because a roadmap says so.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ EXERCISE ============ -->
+  <section class="section" id="exercise-live">
+    <div class="section-kicker">
+      <span class="klabel">Boardroom exercise</span>
+      <h2>Risk-map your pipelines <span class="tag demo">★ 10 min · everyone reflects</span></h2>
+    </div>
+    <p class="lede">No tooling knowledge required. For your own organization, walk the four pillars and name the single biggest risk each one is currently leaving uninsured. The goal is a one-page risk map you could hand to a board.</p>
+
+    <div class="steps">
+      <div class="step"><p><strong>Delivery risk.</strong> How does a change reach production today - one automated, reviewed path, or manual steps someone remembers? Name the last release that went wrong because it was manual.</p></div>
+      <div class="step"><p><strong>Quality and trust risk.</strong> Where could a wrong number reach a leader without a machine catching it first? Point to the one report you would least like to be quietly wrong.</p></div>
+      <div class="step"><p><strong>Downtime and breakage risk.</strong> Which structural change to your data could take a key dashboard down? Who would notice, and how long would it take?</p></div>
+      <div class="step"><p><strong>Model-decay risk.</strong> Do you have any model making real decisions? If yes, how would you know it had quietly gotten worse? If the honest answer is "we would not", that risk is uninsured.</p></div>
+    </div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The one-page map that set the budget.</strong> A data leader ran exactly this exercise with their leadership team and found three of the four risks were completely uninsured, but only one - a wrong number in the board pack - was genuinely frightening to the room. That focus turned a vague "we need DataOps" ask into a funded first project on data testing, shipped in a quarter. The map does the persuading for you.</p>
+    </div>
+  </section>
+
+  <!-- ============ QUESTIONS ============ -->
+  <section class="section" id="questions">
+    <div class="section-kicker">
+      <span class="klabel">Take this to work</span>
+      <h2>★ Questions to ask your data team</h2>
+    </div>
+    <div class="callout win">
+      <strong>Four questions, one per pillar</strong>
+      Each answer tells you whether the matching risk is insured or riding uncovered.
+    </div>
+    <ul>
+      <li><strong>"How does a pipeline change get to production - and could we undo it in five minutes if it went wrong?"</strong> This probes delivery risk and whether DevOps basics are in place.</li>
+      <li><strong>"What automatically checks our data before a human sees it, and what does it check for?"</strong> If the honest answer is "nothing", quality and trust risk is uninsured - this is data CI/CD.</li>
+      <li><strong>"When we change the structure of a core table, what stops it from breaking the dashboards that read it?"</strong> This surfaces downtime and breakage risk, the DBOps question.</li>
+      <li><strong>"For any model driving a real decision, how would we know it had decayed - and how fast?"</strong> No answer means model-decay risk is running uncovered - the MLOps question.</li>
+      <li><strong>"Of these four risks, which one would hurt the business most this quarter?"</strong> The answer tells you which pillar to fund first, in their words, not yours.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session draws on the established DataOps literature and the DevOps practices it inherits, translated for a budget holder. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The four DataOps pillars</span><span class="note">Part 2 · DevOps basics, data CI/CD, DBOps, MLOps</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Pillar-to-business-risk mapping</span><span class="note">Part 2 · delivery, quality/trust, downtime, model-decay</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The data pipeline zones</span><span class="note">Part 1 · ingest, transform, serve, model and decide</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Sequencing the investment</span><span class="note">Part 3 · which pillar to fund first and why</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Maturity levels and metrics</span><span class="note">previewed here; the full ladder and DORA-for-data are in a3</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Data CI/CD (orchestration plus testing) primarily retires which business risk?</p>
+      <button class="qopt" type="button">A · Delivery risk - slow, manual releases</button>
+      <button class="qopt" type="button">B · Model-decay risk - a stale model deciding badly</button>
+      <button class="qopt" type="button">C · Quality and trust risk - wrong numbers reaching a decision-maker</button>
+      <p class="qwhy">Automated testing at each pipeline step catches bad data before it reaches anyone, which is exactly what protects trust in the number on the dashboard.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">2 · A schema change silently takes your morning dashboards down. Which pillar is meant to prevent that?</p>
+      <button class="qopt" type="button">A · MLOps</button>
+      <button class="qopt" type="button">B · DBOps - safe schema migrations</button>
+      <button class="qopt" type="button">C · DevOps basics alone</button>
+      <p class="qwhy">DBOps manages structural database changes so tables can evolve without breaking the reports built on top of them. That downtime and breakage risk is its whole reason to exist.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · For most organizations, which pillar should usually be funded first?</p>
+      <button class="qopt" type="button">A · DevOps basics plus data testing - the cheapest, fastest trust win</button>
+      <button class="qopt" type="button">B · MLOps, because models are the most valuable</button>
+      <button class="qopt" type="button">C · DBOps, because databases are foundational</button>
+      <p class="qwhy">Version control plus basic data tests give the biggest risk reduction per dollar and make every later pillar cheaper and safer to add. Buy the cheapest trust first.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 2 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The four pillars</b><span>DevOps basics, data CI/CD, DBOps, MLOps. Each is really an insurance policy.</span></div>
+      <div class="cheat-item"><b>DevOps basics → delivery risk</b><span>Version control and one release path. Retires slow, scary, manual releases.</span></div>
+      <div class="cheat-item"><b>Data CI/CD → quality/trust risk</b><span>Orchestration plus testing. Stops wrong numbers reaching a decision-maker.</span></div>
+      <div class="cheat-item"><b>DBOps → downtime risk</b><span>Safe schema migrations. Stops a structure change taking prod dashboards down.</span></div>
+      <div class="cheat-item"><b>MLOps → model-decay risk</b><span>Deploy and monitor models. Stops a stale model quietly deciding worse.</span></div>
+      <div class="cheat-item"><b>The four zones</b><span>Ingest → transform → serve → model and decide. Each pillar guards a stretch.</span></div>
+      <div class="cheat-item"><b>Fund first</b><span>DevOps basics plus data testing. Cheapest trust, makes everything after easier.</span></div>
+      <div class="cheat-item"><b>Next session</b><span>a3 places you on the maturity ladder and gives the four metrics that tell the truth.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 2 of 6 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="a1-why-dataops.html">← Previous</a> &nbsp;·&nbsp; <a href="a3-maturity-model.html">Next: The maturity model and metrics →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

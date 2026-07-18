@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 5 · Who owns what: org design and data contracts - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Leader session 5 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Leader track · Session 5 of 6</div>
+    <h1>Who owns what: <span class="accent">org design and data contracts</span></h1>
+    <p class="sub">You can buy the best platform in the world and still fail if nobody owns the data on it. DataOps is at least half an organisational question - who is accountable for which data, who builds the shared road, and how teams promise each other that a dataset will not silently change. No code today: the central-team versus data-mesh choice, a simple map of who does what, and why a data contract is really a human agreement wearing a technical costume. You leave able to draw your own ownership map.</p>
+    <div class="chip-row">
+      <span class="chip level">🤝 Leader track</span>
+      <span class="chip audience">C-level · managers · data leads</span>
+      <span class="chip audience">No code, ever</span>
+      <span class="chip time">Org design</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-30 · Ownership + contracts</span>
+      <span class="a3" style="flex:4">30-42 · Ownership map</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Technology is the easy half</h2>
+    </div>
+    <p class="lede">Session 4 chose the platform. This one decides who stands on it. Almost every stalled data programme fails on the organisational half, not the technical half - the pipeline works, but nobody is clearly accountable when it breaks, and two teams each assume the other owns the number. DataOps borrows its org thinking from modern software teams: clear ownership, a shared paved road, and explicit agreements between the people who produce data and the people who depend on it.</p>
+    <div class="legend">
+      <span class="pill solid">Live - discussed in session</span>
+      <span class="pill light">Self-study - read after</span>
+      <span class="pill peach">★ Questions for your team</span>
+      <span class="pill inkpill">Strategy, not tooling</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A clear-eyed view of the central-team versus data-mesh choice and when each fits, a simple map of the three kinds of team a mature data org needs and what each is accountable for, an understanding of data contracts as human agreements rather than YAML files, and an ownership-mapping exercise that will surface exactly where accountability for your critical data is unclear today.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: CENTRAL VS MESH ============ -->
+  <section class="section" id="central-mesh">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the ownership choice</span>
+      <h2>Central team vs data mesh <span class="tag concept">10 min live</span></h2>
+    </div>
+    <p class="lede">There are two honest ways to organise data ownership, and both are right for different organisations. A central team is one group serving everyone. A data mesh gives each business domain ownership of its own data as a product. The choice is not fashion - it is a bet about where your bottleneck will appear as you scale.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 285" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Central team on the left has one data team serving all domains, giving clear standards but becoming a bottleneck; data mesh on the right gives each domain ownership of its own data product, which scales but needs strong governance">
+        <style>
+          .a5cmT { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .a5cmH { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .a5cmX { font: 400 11.5px Inter, sans-serif; fill: #CCFBF1; }
+          .a5cmM { font: 400 12px Inter, sans-serif; fill: #64748B; }
+          .a5cmN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .a5cmL { stroke: #CBD5E1; stroke-width: 2; fill: none; marker-end: url(#a5cmAh); }
+        </style>
+        <defs>
+          <marker id="a5cmAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <text class="a5cmT" x="30" y="34">Central team</text>
+        <rect x="150" y="30" width="130" height="44" rx="10" fill="#134E4A"/>
+        <text class="a5cmH" x="172" y="57">Data team</text>
+        <rect x="30" y="120" width="80" height="34" rx="8" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a5cmM" x="46" y="142">Sales</text>
+        <rect x="150" y="120" width="80" height="34" rx="8" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a5cmM" x="163" y="142">Finance</text>
+        <rect x="270" y="120" width="80" height="34" rx="8" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a5cmM" x="288" y="142">Ops</text>
+        <line class="a5cmL" x1="200" y1="76" x2="80" y2="118"/>
+        <line class="a5cmL" x1="215" y1="76" x2="200" y2="118"/>
+        <line class="a5cmL" x1="230" y1="76" x2="305" y2="118"/>
+        <text class="a5cmM" x="30" y="182">+ clear standards, one source</text>
+        <text class="a5cmM" x="30" y="202">- becomes a bottleneck as demand grows</text>
+        <line x1="440" y1="30" x2="440" y2="215" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text class="a5cmT" x="510" y="34">Data mesh</text>
+        <rect x="510" y="110" width="95" height="54" rx="10" fill="#0F766E"/>
+        <text class="a5cmH" x="528" y="132" font-size="12">Sales owns</text>
+        <text class="a5cmX" x="528" y="150">its data product</text>
+        <rect x="620" y="110" width="95" height="54" rx="10" fill="#14B8A6"/>
+        <text class="a5cmH" x="638" y="132" font-size="12">Finance owns</text>
+        <text class="a5cmX" x="638" y="150">its data product</text>
+        <rect x="730" y="110" width="95" height="54" rx="10" fill="#134E4A"/>
+        <text class="a5cmH" x="748" y="132" font-size="12">Ops owns</text>
+        <text class="a5cmX" x="748" y="150">its data product</text>
+        <rect x="560" y="46" width="215" height="30" rx="8" fill="#2DD4BF"/>
+        <text class="a5cmT" x="578" y="66">shared governance + platform</text>
+        <line class="a5cmL" x1="620" y1="76" x2="560" y2="108"/>
+        <line class="a5cmL" x1="668" y1="76" x2="668" y2="108"/>
+        <line class="a5cmL" x1="715" y1="76" x2="775" y2="108"/>
+        <text class="a5cmM" x="510" y="190">+ scales, domains move fast</text>
+        <text class="a5cmM" x="510" y="210">- needs strong shared governance</text>
+        <rect x="30" y="255" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a5cmN" x="54" y="267">Central is right until the queue forms. Mesh is right if - and only if - governance is strong enough to hold it together.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - one central team serving all domains, versus domains owning their own data products</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>When each model fits<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Neither model is the enlightened one. They solve different problems, and choosing the wrong one for your size is how good data teams end up either overwhelmed or ungoverned. A concept to hold: <strong>you do not choose between quality and scale - you choose where to put the bottleneck.</strong></p>
+        <ul>
+          <li><strong>A central team fits smaller or earlier organisations.</strong> One group owning all data gives you consistent standards, a single source of truth, and easy governance - because everything runs through one door. Its failure mode is that same door: as demand grows, every domain queues behind the central team, and the team becomes the bottleneck that slows the whole company.</li>
+          <li><strong>A data mesh fits larger, multi-domain organisations.</strong> Each domain - sales, finance, operations - owns its data as a product, including its quality. This scales because no single team is the chokepoint, and the people closest to the data own it. Its failure mode is fragmentation: without strong shared governance and a common platform, a mesh becomes a set of disconnected silos that cannot be trusted across domains.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The honest sequence</strong>
+          Most organisations should start central and evolve toward mesh only when the central team is clearly the bottleneck <em>and</em> the governance foundation is strong enough to hold decentralised ownership together. Adopting a mesh before you can govern it is the fastest way to turn one trusted source into ten untrusted ones. Mesh is a graduation, not a starting point.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: TEAM TOPOLOGIES ============ -->
+  <section class="section" id="topologies">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · who does what</span>
+      <h2>Team topologies - who does what <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Whichever ownership model you pick, a mature data organisation needs three distinct kinds of team doing three distinct jobs. Borrowing the language of Team Topologies - a well-known model for organising modern technical teams - keeps these roles from blurring into one overloaded group that does everything and owns nothing clearly.</p>
+
+    <table class="clean">
+      <thead><tr><th>Team</th><th>What it owns</th><th>What "good" looks like</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Platform team</strong><br><span style="color:#64748B">builds the paved road</span></td><td>The shared infrastructure - orchestration, quality tooling, access control - that every other team builds on</td><td>Domains ship faster because the hard parts are already solved and standardised for them</td></tr>
+        <tr><td><strong>Data product teams</strong><br><span style="color:#64748B">own the domains</span></td><td>The actual data products for their domain - sales, finance, operations - including their quality and reliability</td><td>Each team is clearly accountable for its data and treats its consumers like customers</td></tr>
+        <tr><td><strong>Enabling / governance team</strong><br><span style="color:#64748B">sets the guardrails</span></td><td>Standards, policies, and coaching - the rules of the road and the help to follow them</td><td>Governance is enabling and mostly invisible, not a committee that slows everyone down</td></tr>
+      </tbody>
+    </table>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The trap of one team doing all three<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>In most organisations, one small data team is quietly doing all three jobs at once - building the platform, owning every domain's data, and setting the standards - and doing none of them well because the roles pull in different directions.</p>
+        <ul>
+          <li><strong>The platform team builds leverage,</strong> not features. Its job is the paved road that makes every other team faster. When platform work is squeezed in between firefighting requests, the road never gets paved and everyone stays slow.</li>
+          <li><strong>Data product teams create value,</strong> and must be accountable for it. When "the data team" owns every domain's data, no business unit feels responsible for its own quality - accountability evaporates into a shared inbox.</li>
+          <li><strong>The enabling team protects trust</strong> by setting light, clear guardrails and coaching teams to meet them. Done well it is nearly invisible. Done as a gatekeeping committee, it becomes the bottleneck it was meant to prevent.</li>
+        </ul>
+        <p>Separating these three - even loosely, even in a small org where one person wears two hats - is what lets a data organisation grow without collapsing into a single overloaded team.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: DATA CONTRACTS ============ -->
+  <section class="section" id="contracts">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · agreements, not YAML</span>
+      <h2>Data contracts as social technology <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Once domains own their own data, they need a way to promise each other that a dataset will not change without warning. That promise is a data contract. It looks technical - a schema, a set of expectations - but its real purpose is social: it turns a silent, breakable assumption between two teams into an explicit, negotiated agreement.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 275" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A data contract sits between a producer team and a consumer team, specifying schema, quality expectations, ownership, and an SLA, turning a silent assumption into an explicit human agreement">
+        <style>
+          .a5dcT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a5dcI { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .a5dcX { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .a5dcM { font: 400 12px Inter, sans-serif; fill: #64748B; }
+          .a5dcN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .a5dcL { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#a5dcAh); }
+        </style>
+        <defs>
+          <marker id="a5dcAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="70" width="180" height="90" rx="14" fill="#134E4A"/>
+        <text class="a5dcT" x="54" y="108">Producer team</text>
+        <text class="a5dcX" x="54" y="132">promises this data</text>
+        <text class="a5dcX" x="54" y="150">will keep its shape</text>
+        <rect x="330" y="50" width="220" height="130" rx="14" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a5dcI" x="354" y="80">The data contract</text>
+        <text class="a5dcM" x="354" y="106">· schema - the columns and types</text>
+        <text class="a5dcM" x="354" y="128">· quality - freshness, no nulls</text>
+        <text class="a5dcM" x="354" y="150">· ownership - who to call</text>
+        <text class="a5dcM" x="354" y="172">· SLA - how fresh, how reliable</text>
+        <rect x="670" y="70" width="180" height="90" rx="14" fill="#0F766E"/>
+        <text class="a5dcT" x="694" y="108">Consumer team</text>
+        <text class="a5dcX" x="694" y="132">builds on it, trusting</text>
+        <text class="a5dcX" x="694" y="150">the promise holds</text>
+        <line class="a5dcL" x1="212" y1="115" x2="326" y2="115"/>
+        <line class="a5dcL" x1="552" y1="115" x2="666" y2="115"/>
+        <text class="a5dcM" x="230" y="106">agrees</text>
+        <text class="a5dcM" x="572" y="106">relies</text>
+        <rect x="30" y="245" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a5dcN" x="54" y="257">The file is the artefact. The agreement between two teams is the point - contracts prevent silent breakage.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - a data contract as an explicit agreement between a producer and a consumer</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why contracts are human, not technical<span class="mini">3 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A data contract records four things a producer and consumer agree on: the <strong>schema</strong> (what columns and types exist), the <strong>quality expectations</strong> (how fresh, how complete, which values are valid), the <strong>ownership</strong> (who is accountable and who to call), and the <strong>SLA</strong> (how reliable and timely the data will be). Written down and checked automatically, a contract does two jobs:</p>
+        <ul>
+          <li><strong>It prevents silent breakage.</strong> Today, a producer can rename a column on Tuesday and a consumer's dashboard breaks on Wednesday, with nobody warned. A contract makes that change a visible, agreed event instead of a silent surprise - the breakage is caught before it reaches a leader's screen.</li>
+          <li><strong>It makes ownership explicit.</strong> A contract names who is responsible for the data and who depends on it. When something goes wrong, there is no argument about whose problem it is - the agreement already said.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The mental model to carry to the board</strong>
+          A data contract is social technology, not just a config file. The YAML your engineers write is only the record of a human agreement between two teams about what one owes the other. The hard, valuable part is the conversation that produces the agreement - not the file that stores it. Fund the conversations, and the files follow.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ EXERCISE ============ -->
+  <section class="section" id="exercise-live">
+    <div class="section-kicker">
+      <span class="klabel">Boardroom exercise</span>
+      <h2>Ownership map <span class="tag demo">★ 12 min · map it together</span></h2>
+    </div>
+    <p class="lede">The fastest way to find your organisational risk is to try to name the owner of each critical dataset out loud. Where the room hesitates, or two people answer differently, is where accountability is unclear - and unclear accountability is where data quietly rots.</p>
+
+    <div class="steps">
+      <div class="step"><p>List your five most business-critical datasets - the numbers a leader actually decides on. Revenue, active customers, pipeline, inventory, whatever moves your decisions.</p></div>
+      <div class="step"><p>For each one, name the single accountable owner - a person or a team, not "the data team" in general. If you cannot name one clearly, mark it red; that is an ownership gap.</p></div>
+      <div class="step"><p>For each dataset, name its main consumers - who breaks if it breaks? If the producer does not know who depends on their data, mark it: that is a silent-breakage risk waiting to happen.</p></div>
+      <div class="step"><p>Circle every dataset where ownership was unclear or contested. These are your first candidates for an explicit owner and a data contract.</p></div>
+      <div class="step"><p>Ask the harder question: are we a central team that has become a bottleneck, or a set of domains with no shared governance? The pattern in your red marks usually answers it.</p></div>
+    </div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The dataset three teams thought someone else owned.</strong> A data leader ran this map and found the company's headline "active customers" metric had no clear owner - marketing assumed data engineering owned it, data engineering assumed the product team did, and the product team assumed marketing did. The number had been subtly wrong for months and steered a campaign budget. Naming the owner took ten minutes. Finding out nobody owned it was the whole point.</p>
+    </div>
+  </section>
+
+  <!-- ============ QUESTIONS ============ -->
+  <section class="section" id="questions">
+    <div class="section-kicker">
+      <span class="klabel">Take this to work</span>
+      <h2>★ Questions to ask your data team</h2>
+    </div>
+    <div class="callout win">
+      <strong>Five questions that reveal your ownership gaps</strong>
+      Ask them about your most important data. Hesitation, or two different answers, is the finding.
+    </div>
+    <ul>
+      <li><strong>"Who is the single accountable owner of our most important dataset?"</strong> If the answer is a vague "the data team" or a debate, ownership is unclear and quality has no home.</li>
+      <li><strong>"Are we a central team, a data mesh, or an accident?"</strong> Many orgs have drifted into a shape nobody chose. Naming it is the first step to fixing the bottleneck or the fragmentation.</li>
+      <li><strong>"Do we have a platform team building the paved road, or is everyone reinventing the same plumbing?"</strong> Without a platform team, leverage never accumulates.</li>
+      <li><strong>"When a producer changes a dataset, how do the consumers find out - before or after it breaks?"</strong> "After" means you have no data contracts and silent breakage is routine.</li>
+      <li><strong>"Where does our data have producers and consumers who have never actually agreed on what is promised?"</strong> Those unspoken assumptions are your next contracts.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session draws on the data-mesh literature, the Team Topologies model, and the growing practice around data contracts. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Central team vs data mesh</span><span class="note">Part 1 · the two ownership models and when each fits</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Team topologies for data</span><span class="note">Part 2 · platform, data product, and enabling teams</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Data contracts</span><span class="note">Part 3 · schema, quality, ownership, SLA - as human agreements</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Governance tooling</span><span class="note">the contracts your engineers implement are builder-track work</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Proving the org change paid off</span><span class="note">the ROI of clear ownership lands in a6</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · The main failure mode of a single central data team is...</p>
+      <button class="qopt" type="button">A · It produces data nobody can govern</button>
+      <button class="qopt" type="button">B · As demand grows, every domain queues behind it and it becomes the bottleneck</button>
+      <button class="qopt" type="button">C · It has too little control over standards</button>
+      <p class="qwhy">A central team gives clear standards and one source of truth, but its single door becomes a chokepoint at scale. That bottleneck is the signal it may be time to evolve toward a mesh.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · A data mesh only works well when...</p>
+      <button class="qopt" type="button">A · The central team is abolished entirely</button>
+      <button class="qopt" type="button">B · Every domain uses completely different tools</button>
+      <button class="qopt" type="button">C · There is strong shared governance and a common platform holding the domains together</button>
+      <p class="qwhy">Domain ownership scales, but without strong shared governance a mesh fragments into untrusted silos. Mesh is a graduation you earn once your governance foundation is solid.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · A data contract is best understood as...</p>
+      <button class="qopt" type="button">A · A human agreement between a producer and a consumer - schema, quality, ownership, SLA - that happens to be written as a file</button>
+      <button class="qopt" type="button">B · A legal document signed by lawyers</button>
+      <button class="qopt" type="button">C · A type of database index</button>
+      <p class="qwhy">The YAML is only the record. The real value is the explicit agreement between two teams that prevents silent breakage and makes ownership clear. Fund the conversation, not just the file.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 5 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Central team</b><span>One team serves all. Clear standards, one source of truth - becomes a bottleneck as demand grows.</span></div>
+      <div class="cheat-item"><b>Data mesh</b><span>Domains own their data as products. Scales and moves fast - needs strong shared governance or it fragments.</span></div>
+      <div class="cheat-item"><b>The honest sequence</b><span>Start central. Evolve to mesh only when the central team is the bottleneck AND governance is strong. Mesh is a graduation.</span></div>
+      <div class="cheat-item"><b>Platform team</b><span>Builds the paved road - shared orchestration, quality, access - so every other team ships faster.</span></div>
+      <div class="cheat-item"><b>Data product teams</b><span>Own their domain's data including its quality. Accountable, treat consumers as customers.</span></div>
+      <div class="cheat-item"><b>Enabling / governance team</b><span>Sets light guardrails and coaches. Done well it is nearly invisible, not a gatekeeping committee.</span></div>
+      <div class="cheat-item"><b>Data contract</b><span>Producer-consumer agreement: schema + quality + ownership + SLA. Prevents silent breakage. It is social tech, not YAML.</span></div>
+      <div class="cheat-item"><b>Next session</b><span>a6 proves it - ROI, the metrics a board believes, and a crawl-walk-run 90-day roadmap.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 5 of 6 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="a4-build-buy-oss.html">← Previous: Build, buy, or open-source</a> &nbsp;·&nbsp; <a href="a6-roi-and-roadmap.html">Next: Proving it - ROI and a 90-day roadmap →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

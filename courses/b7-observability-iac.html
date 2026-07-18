@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 7 · Observability, secrets and IaC - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Builder session 7 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Builder track · Session 7 of 8</div>
+    <h1>Observability, <span class="accent">secrets and IaC</span></h1>
+    <p class="sub">RetailPulse now cleans, orchestrates, tests, migrates, trains, and serves. But you still cannot answer the one question an on-call teammate asks at 7am: is it healthy right now? Tonight you make the pipeline observable - structured logs, freshness and volume checks, alerts that route to the owner - then lock down secrets and stand the whole stack up with one command. This is <span style="color:#FB923C;font-weight:700">hands-on</span> and gets your platform trustworthy.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Builder track · hands-on</span>
+      <span class="chip audience">Practitioners: DA · DE · DS · ML</span>
+      <span class="chip audience">Python · Docker Compose · Postgres · Airflow · MLflow</span>
+      <span class="chip time">RetailPulse v0.6 -> v0.7</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-20 · Signals, alerts, secrets</span>
+      <span class="a3" style="flex:5">20-42 · Build-along: logging + Compose</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where RetailPulse stands</h2>
+    </div>
+    <p class="lede">Six sessions in, RetailPulse is a real data product: a <code>clean_sales</code> pipeline writing <code>clean_sales.parquet</code>, an Airflow DAG scheduling it, a Great Expectations suite plus a data contract gating quality, a versioned Postgres <code>sales</code> table, a demand-forecast model tracked and registered in MLflow, and a FastAPI <code>/predict</code> endpoint in Docker with Evidently drift monitoring and a retrain trigger. CI runs on every PR. It works. What it does not yet do is <em>tell you when it stops working</em>.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill peach">★ Try it now command</span>
+      <span class="pill inkpill">Open-source stack + AWS notes</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      Structured logs on the pipeline so every run is searchable, freshness and volume checks that know when the sales table is stale or the row count is wrong, an alert that fires to a human when something users would feel, secrets pulled out of the code and into a gitignored <code>.env</code>, and a <code>docker-compose.yml</code> that stands the entire RetailPulse stack - Postgres, Airflow, MLflow - up with one command. RetailPulse v0.7.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THREE SIGNALS ============ -->
+  <section class="section" id="signals">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the three signals + the five pillars</span>
+      <h2>The three signals of data observability <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Observability is the ability to answer "what is happening and why" without shipping new code to find out. It rests on three kinds of signal: logs (what happened, event by event), metrics (how much and how fast, as numbers over time), and lineage (what depends on what, so a break upstream explains a break downstream). App observability watches these for services. Data observability watches them for the data itself.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three signals of observability feeding a single question: logs for what happened, metrics for how much and how fast, lineage for what depends on what">
+        <style>
+          .b7sT { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
+          .b7sL { font: 400 12.5px Inter, sans-serif; fill: #CCFBF1; }
+          .b7sX { font: 400 13px Inter, sans-serif; fill: #64748B; }
+          .b7sN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b7sArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b7sAh); }
+        </style>
+        <defs>
+          <marker id="b7sAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="40" width="200" height="70" rx="12" fill="#134E4A"/>
+        <text class="b7sT" x="54" y="70">Logs</text>
+        <text class="b7sL" x="54" y="92">what happened, per event</text>
+        <rect x="30" y="120" width="200" height="70" rx="12" fill="#0F766E"/>
+        <text class="b7sT" x="54" y="150">Metrics</text>
+        <text class="b7sL" x="54" y="172">how much · how fast</text>
+        <rect x="30" y="200" width="200" height="50" rx="12" fill="#14B8A6"/>
+        <text class="b7sT" x="54" y="230">Lineage · what depends on what</text>
+        <rect x="470" y="105" width="200" height="80" rx="12" fill="#2DD4BF"/>
+        <text class="b7sT" x="494" y="140" fill="#0F172A">Is RetailPulse</text>
+        <text class="b7sT" x="494" y="162" fill="#0F172A">healthy right now?</text>
+        <line class="b7sArr" x1="232" y1="75" x2="468" y2="130"/>
+        <line class="b7sArr" x1="232" y1="155" x2="468" y2="145"/>
+        <line class="b7sArr" x1="232" y1="225" x2="468" y2="160"/>
+        <text class="b7sX" x="710" y="140">answerable</text>
+        <text class="b7sX" x="710" y="158">in seconds</text>
+        <rect x="30" y="230" width="0" height="0"/>
+        <rect x="470" y="228" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b7sN" x="494" y="240">Three signals, one question. Without them, "is it healthy?" is a guess.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - logs, metrics, and lineage combine to answer one operational question</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>App observability vs DATA observability<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Application observability asks: is the <em>service</em> up, fast, and error-free? Data observability asks a harder question: is the <em>data</em> flowing through it correct, complete, and current? A FastAPI endpoint can return HTTP 200 in 40ms all day while quietly serving predictions off a sales table that stopped updating on Tuesday. The service is healthy; the data is rotten. The classic frame is the <strong>five pillars of data observability</strong>:</p>
+        <ul>
+          <li><strong>Freshness:</strong> how recently did the data update? A stale <code>sales</code> table is the most common silent failure.</li>
+          <li><strong>Volume:</strong> did the expected number of rows arrive? A load that drops from 50k rows to 3k is broken even if nothing errored.</li>
+          <li><strong>Schema:</strong> did the columns or types change out from under you? The b3 contract guards this; observability watches it in prod.</li>
+          <li><strong>Distribution:</strong> are the values in range? Negative prices, dates in 1970, a category that vanished - these pass row counts but poison models.</li>
+          <li><strong>Lineage:</strong> when something breaks, what upstream source caused it and what downstream depends on it? This turns a 2am mystery into a 2-minute trace.</li>
+        </ul>
+        <div class="prompt-box good"><span class="label">★ Try it now (your terminal) - is the parquet fresh?</span>python -c "import os, time; \
+age = (time.time() - os.path.getmtime('data/clean_sales.parquet'))/3600; \
+print(f'clean_sales.parquet is {age:.1f}h old')"
+# If that number is bigger than your SLA, the data is stale - a freshness signal you can act on.</div>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The dashboard that was green and wrong.</strong> A retail team's exec dashboard showed flat sales for nine days. Every service was up, every check was HTTP 200, no page fired. The upstream export job had silently stopped writing; the warehouse kept serving the last good snapshot. A single freshness metric - "hours since sales last updated" - would have caught it on day one. App observability said healthy. Data observability was the missing lens.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Metrics, logs, traces - the app-observability triad<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>In service land the triad is metrics, logs, and traces. Data land renames the third to lineage, but the discipline is the same: emit numbers you can chart, events you can search, and dependency links you can walk. For RetailPulse tonight you build the first two by hand - structured logs and a couple of metrics - because feeling them is how you learn what a paid observability platform is actually doing for you later.</p>
+        <table class="clean">
+          <thead><tr><th>Signal</th><th>Service question</th><th>Data question for RetailPulse</th></tr></thead>
+          <tbody>
+            <tr><td>Logs</td><td>What did the code do?</td><td>Did the cleaning step drop rows, and how many?</td></tr>
+            <tr><td>Metrics</td><td>Latency, error rate</td><td>Freshness hours, row count, null rate</td></tr>
+            <tr><td>Lineage / traces</td><td>Which call failed?</td><td>Which source table caused the bad forecast?</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: ALERTING ============ -->
+  <section class="section" id="alerting">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers alerts worth having + alert fatigue</span>
+      <h2>Alerting that people trust <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Signals are only useful if someone acts on them. An alert is a promise: when this fires, a real problem exists and it is worth interrupting a human. Break that promise a few times - alert on noise - and the whole team learns to ignore the channel. Then the one alert that mattered gets muted with the rest. The craft is picking a small set of alerts that map to something a user would actually feel.</p>
+
+    <table class="clean">
+      <thead><tr><th>Alert</th><th>Pillar</th><th>Condition for RetailPulse</th><th>Why it is worth a page</th></tr></thead>
+      <tbody>
+        <tr><td>Pipeline failed</td><td>-</td><td>The Airflow DAG task errored or did not run</td><td>No fresh data at all downstream</td></tr>
+        <tr><td>Data late / stale</td><td>Freshness</td><td><code>sales</code> last loaded &gt; 26h ago (SLA 24h + buffer)</td><td>Forecasts and dashboards go quietly out of date</td></tr>
+        <tr><td>Row count out of band</td><td>Volume</td><td>Daily rows outside 30k-70k historical band</td><td>A partial or double load skews every metric</td></tr>
+        <tr><td>Schema changed</td><td>Schema</td><td>A column dropped or a type flipped vs the contract</td><td>Downstream code breaks or corrupts silently</td></tr>
+        <tr><td>Drift high</td><td>Distribution</td><td>Evidently drift score over threshold (from b6)</td><td>Model predicts on data it was not trained for</td></tr>
+      </tbody>
+    </table>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Alert on symptoms users feel, route to the owner<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Two rules save you from the alert-fatigue trap:</p>
+        <ul>
+          <li><strong>Alert on symptoms, not causes.</strong> "Sales data is 30 hours stale" is a symptom a user feels. "CPU on the worker hit 80%" is a cause that may or may not matter. Page on the first; put the second on a dashboard you look at when investigating.</li>
+          <li><strong>Route to the owner.</strong> An alert with no clear owner is noise by design. Each RetailPulse alert names the person or team who can fix it and links straight to the runbook. If nobody owns it, do not alert on it - delete the check or assign the owner first.</li>
+          <li><strong>Make every alert actionable.</strong> If the honest response to an alert is "yeah, that happens sometimes," it is not an alert, it is a log line. Tune the threshold or drop it.</li>
+          <li><strong>Severity tiers.</strong> Page (wake someone) for "users are affected now." Ticket (business hours) for "will be a problem soon." Log (no notification) for everything else.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The anti-pattern: alert fatigue</strong>
+          A channel that fires 40 times a day trains everyone to ignore it. The failure is not too few alerts - it is too many bad ones. Ruthlessly delete alerts nobody acts on. A quiet alert channel where every message means "go look now" is worth more than a firehose.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: SECRETS + IaC ============ -->
+  <section class="section" id="secrets-iac">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers secrets management + Infrastructure as Code</span>
+      <h2>Secrets and Infrastructure as Code <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">RetailPulse now needs a Postgres password, an MLflow URI, maybe a Slack webhook. None of those belong in Git - a committed secret is compromised forever, because history keeps it. And the stack now has enough moving parts (Postgres, Airflow, MLflow, the API) that "set it up by hand" is not reproducible. Two disciplines fix both: secrets kept out of code, and the environment itself described as code.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Secrets stay out of Git in a gitignored env file or secret manager while Infrastructure as Code reproduces the whole environment from a committed compose file">
+        <style>
+          .b7iT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b7iI { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .b7iL { font: 400 12.5px Inter, sans-serif; fill: #CCFBF1; }
+          .b7iX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b7iN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b7iArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b7iAh); }
+          .b7iNo { stroke: #F87171; stroke-width: 2.5; fill: none; }
+        </style>
+        <defs>
+          <marker id="b7iAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="40" width="180" height="64" rx="12" fill="#134E4A"/>
+        <text class="b7iT" x="54" y="68">Secrets</text>
+        <text class="b7iL" x="54" y="88">password · webhook · URI</text>
+        <rect x="30" y="150" width="180" height="64" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b7iI" x="54" y="178">.env (gitignored)</text>
+        <text class="b7iX" x="54" y="198">or a secret manager</text>
+        <rect x="360" y="230" width="140" height="40" rx="10" fill="#ECFDF9" stroke="#F87171"/>
+        <text class="b7iI" x="384" y="255" fill="#B91C1C">Git repo</text>
+        <line class="b7iArr" x1="120" y1="106" x2="120" y2="148"/>
+        <path class="b7iNo" d="M215 175 L350 240"/>
+        <path class="b7iNo" d="M235 250 L315 250" transform="rotate(45 275 250)"/>
+        <text class="b7iX" x="230" y="215" fill="#B91C1C">never</text>
+        <rect x="450" y="40" width="180" height="64" rx="12" fill="#0F766E"/>
+        <text class="b7iT" x="474" y="68">IaC · code</text>
+        <text class="b7iL" x="474" y="88">docker-compose.yml</text>
+        <rect x="700" y="40" width="150" height="64" rx="12" fill="#2DD4BF"/>
+        <text class="b7iI" x="724" y="68">Whole env</text>
+        <text class="b7iX" x="724" y="88">rebuilt anywhere</text>
+        <line class="b7iArr" x1="632" y1="72" x2="698" y2="72"/>
+        <text class="b7iX" x="450" y="130">committed - describes services, not secrets</text>
+        <line class="b7iArr" x1="212" y1="182" x2="448" y2="90"/>
+        <text class="b7iX" x="250" y="150">values injected at runtime</text>
+        <rect x="30" y="258" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b7iN" x="54" y="270">Config as code goes in Git. Secret values never do - they are injected at runtime.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - secrets stay out of Git while IaC reproduces the environment from a committed file</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Secrets management and Infrastructure as Code<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>Secrets management</strong> has one iron rule and a ladder of maturity:</p>
+        <ul>
+          <li><strong>Never in Git.</strong> Not in code, not in config, not in a notebook cell. History is forever; a leaked key is a rotate-everything incident.</li>
+          <li><strong>Environment variables + a gitignored <code>.env</code>.</strong> The lightweight standard: code reads <code>os.environ["DB_PASSWORD"]</code>, the value lives in <code>.env</code>, and <code>.env</code> is in <code>.gitignore</code>. Commit a <code>.env.example</code> with keys but no values so teammates know what to set.</li>
+          <li><strong>A secret manager</strong> for anything shared or production: AWS Secrets Manager, SSM Parameter Store, HashiCorp Vault. Rotation, access control, and audit come built in.</li>
+        </ul>
+        <p><strong>Infrastructure as Code (IaC)</strong> means the environment is described in a file you commit, not clicked together by hand. Tonight <code>docker-compose.yml</code> is your lightweight IaC - one file that declares Postgres, Airflow, and MLflow and brings them all up together. Terraform is the same idea pointed at the cloud: it declares the real VPC, database, and cluster so prod is reproducible too. Same principle at two altitudes.</p>
+        <div class="prompt-box good"><span class="label">Prompt A - .gitignore and .env.example</span># .gitignore  (make sure these lines exist)
+.env
+data/
+*.parquet
+
+# .env.example  (commit THIS - keys only, no real values)
+POSTGRES_PASSWORD=changeme
+MLFLOW_TRACKING_URI=http://mlflow:5000
+SLACK_WEBHOOK_URL=</div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>When to graduate from .env to a secret manager<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A gitignored <code>.env</code> is right for local dev and small teams. Move to a managed secret store the moment secrets are shared across people or environments, or the moment one lands in production. Signals it is time: you are pasting passwords in Slack, you cannot answer "who has access to the prod DB password," or you need to rotate a key and have no idea what would break. AWS Secrets Manager and SSM Parameter Store both inject values as environment variables at container start, so your code - <code>os.environ[...]</code> - does not change. Only the source of the value does.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Structured logging and a freshness alert <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">RetailPulse v0.7, part one: make the pipeline observable. Add structured (JSON) logs so every run is searchable, compute a freshness and a volume check against the Postgres <code>sales</code> table, and emit an alert to a Slack webhook (or a log stub) when the data is stale or the row count falls out of band.</p>
+
+    <div class="steps">
+      <div class="step"><p>Add structured logging to <code>pipeline.py</code>: configure a JSON log formatter and log the row count in and out of <code>clean_sales</code>. Now every run leaves a searchable trail instead of a bare <code>print</code>.</p></div>
+      <div class="step"><p>Write <code>monitor.py</code> with two checks against the <code>sales</code> table: freshness (hours since <code>max(loaded_at)</code>) and volume (today's row count vs a historical band). Read the DB password from <code>os.environ</code>, never a literal.</p></div>
+      <div class="step"><p>Add an <code>alert(msg, severity)</code> function that posts to the Slack webhook from <code>SLACK_WEBHOOK_URL</code> if set, and otherwise logs at WARNING. This is the "route to a human" step - stubbed so it works with no webhook too.</p></div>
+      <div class="step"><p>Wire the check into the Airflow DAG as a task that runs after the load. Trip it on purpose: hold back today's load and watch the freshness alert fire.</p></div>
+      <div class="step"><p>Confirm the alert names the symptom ("sales stale: 30.2h &gt; 26h SLA"), not a cause. That phrasing is what makes a page trustworthy.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ RetailPulse v0.7 - monitor.py, freshness + volume + alert</span>import os, json, logging
+import psycopg2
+
+log = logging.getLogger("retailpulse.monitor")
+
+def _alert(msg: str, severity: str = "page") -&gt; None:
+    url = os.environ.get("SLACK_WEBHOOK_URL")
+    if url:
+        import requests
+        requests.post(url, json={"text": f"[{severity}] {msg}"}, timeout=5)
+    else:
+        log.warning(json.dumps({"alert": msg, "severity": severity}))
+
+def check_sales(sla_hours: float = 26, low: int = 30_000, high: int = 70_000) -&gt; None:
+    conn = psycopg2.connect(
+        host=os.environ["PG_HOST"],
+        dbname="retailpulse",
+        user=os.environ["PG_USER"],
+        password=os.environ["POSTGRES_PASSWORD"],  # from .env, never hardcoded
+    )
+    with conn, conn.cursor() as cur:
+        cur.execute("SELECT EXTRACT(EPOCH FROM now() - max(loaded_at))/3600 FROM sales")
+        age = float(cur.fetchone()[0] or 1e9)
+        cur.execute("SELECT count(*) FROM sales WHERE loaded_at::date = current_date")
+        rows = cur.fetchone()[0]
+    if age &gt; sla_hours:
+        _alert(f"sales stale: {age:.1f}h &gt; {sla_hours}h SLA", "page")
+    if not (low &lt;= rows &lt;= high):
+        _alert(f"sales volume out of band: {rows} rows (expect {low}-{high})", "page")
+    log.info(json.dumps({"freshness_h": round(age, 1), "rows_today": rows}))
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    check_sales()</div>
+
+    <div class="callout tip">
+      <strong>Data tip</strong>
+      Derive the volume band from history, not a guess - query the last 30 days and set <code>low</code>/<code>high</code> to roughly the 5th and 95th percentile. A band that is too tight cries wolf; too wide catches nothing. Store the band in config so it can be tuned without a code change.
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Docker Compose stands the stack up <span class="tag demo">★ 10 min · build your own</span></h2>
+    </div>
+    <p class="lede">RetailPulse v0.7, part two: one <code>docker compose up</code> brings the whole platform online - Postgres, Airflow, and MLflow, wired together, with every secret read from a gitignored <code>.env</code> that is never committed. New teammate, new laptop, one command, working stack.</p>
+
+    <div class="steps">
+      <div class="step"><p>Write <code>docker-compose.yml</code> (Prompt B) declaring three services: <code>postgres</code>, <code>airflow</code>, and <code>mlflow</code>, on a shared network so they can reach each other by name.</p></div>
+      <div class="step"><p>Pull every secret from the environment with <code>${VAR}</code> syntax. Compose reads <code>.env</code> automatically. Confirm <code>.env</code> is in <code>.gitignore</code> and only <code>.env.example</code> is committed.</p></div>
+      <div class="step"><p>Add a named volume for Postgres data so the database survives a restart, and mount your <code>dags/</code> folder into Airflow so DAG edits show up without a rebuild.</p></div>
+      <div class="step"><p>Run <code>docker compose up -d</code>. Watch all three come up. Open Airflow on :8080 and MLflow on :5000 - the same stack you built piecemeal across b2-b6, now reproducible from one file.</p></div>
+      <div class="step"><p>Tear it down with <code>docker compose down</code>, then bring it back. Same environment, every time. That reproducibility is the whole point of IaC.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt B - docker-compose.yml (secrets from .env, never committed)</span>services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: retailpulse
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # from .env
+    volumes: [pgdata:/var/lib/postgresql/data]
+    ports: ["5432:5432"]
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.14.1
+    command: mlflow server --host 0.0.0.0 --backend-store-uri postgresql://${PG_USER}:${POSTGRES_PASSWORD}@postgres/retailpulse
+    ports: ["5000:5000"]
+    depends_on: [postgres]
+
+  airflow:
+    image: apache/airflow:2.9.2
+    env_file: .env                              # never checked into Git
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    volumes: ["./dags:/opt/airflow/dags"]
+    ports: ["8080:8080"]
+    depends_on: [postgres]
+
+volumes:
+  pgdata:</div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The onboarding that used to take three days.</strong> A data team's setup doc was 40 steps of "install this, then edit that." Every new hire lost their first three days to it, and it was subtly wrong for half of them. They replaced it with a <code>docker-compose.yml</code> and a <code>.env.example</code>. New setup: clone, copy the example to <code>.env</code>, fill three values, <code>docker compose up</code>. Three days became twenty minutes - and the environment was finally identical for everyone.</p>
+    </div>
+    <div class="callout tip">
+      <strong>☁️ AWS mapping</strong>
+      Three OSS jobs, three AWS services, same three ideas. Observability: <strong>CloudWatch</strong> for logs, metrics, and alarms - your JSON logs become CloudWatch Logs Insights queries, your freshness metric a CloudWatch alarm. Secrets: <strong>Secrets Manager</strong> or <strong>SSM Parameter Store</strong> inject values at container start, so <code>os.environ[...]</code> is unchanged. IaC: <strong>Terraform</strong> or <strong>CloudFormation</strong> declares the real VPC, RDS, and cluster the way <code>docker-compose.yml</code> declares your local stack. The disciplines are identical; only the scale changes.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 40-55 min total</span></h2>
+    </div>
+    <ul>
+      <li>Finish both demos if you did not complete them live. Everyone should trip the freshness alert on purpose at least once and feel it fire.</li>
+      <li>Add a third check to <code>monitor.py</code>: a schema check that alerts if the <code>sales</code> columns drift from the b3 contract. Reuse the contract you already wrote.</li>
+      <li>Add a <code>.env.example</code> to the repo and audit your history for any secret that ever got committed. If you find one, rotate it - do not just delete the line.</li>
+      <li>Give one alert a real owner and a one-line runbook link. An alert nobody owns is noise; fixing that is most of what "trustworthy alerting" means.</li>
+      <li>Optional reading: the Docker Compose spec and the CloudWatch alarms quickstart - now you can read them as a review of what you already built.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This track teaches DataOps on an open-source stack from the tools' official docs, with AWS mapping notes. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The three signals + five pillars of data observability</span><span class="note">Part 1 · logs, metrics, lineage; freshness/volume/schema/distribution/lineage</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Alerting design + alert fatigue</span><span class="note">Part 2 · symptoms not causes, route to owner</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Secrets management + Docker Compose as IaC</span><span class="note">Part 3 + Demo 2 · .env, secret managers, compose file</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Python structured logging + Slack webhooks</span><span class="note">Demo 1 · JSON logs and a stubbed alert path</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">CloudWatch / Secrets Manager / Terraform mapping</span><span class="note">Demo 2 sidebar · concept parity, not a full AWS tutorial</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · What is the difference between app observability and data observability?</p>
+      <button class="qopt" type="button">A · They are the same thing with different names</button>
+      <button class="qopt" type="button">B · Data observability only tracks how fast the service responds</button>
+      <button class="qopt" type="button">C · App observability asks if the service is up and fast; data observability asks if the data is correct, complete, and current</button>
+      <p class="qwhy">A service can return HTTP 200 in 40ms while serving off a sales table that stopped updating on Tuesday. Freshness, volume, schema, distribution, and lineage are the data lens the service lens misses.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · What causes alert fatigue, and what is the fix?</p>
+      <button class="qopt" type="button">A · Too many bad alerts train the team to ignore the channel; the fix is ruthlessly deleting alerts nobody acts on and alerting on symptoms users feel</button>
+      <button class="qopt" type="button">B · Too few alerts; the fix is alerting on every metric</button>
+      <button class="qopt" type="button">C · Slow dashboards; the fix is faster hardware</button>
+      <p class="qwhy">The failure is too many noisy alerts, not too few. A quiet channel where every message means "go look now" and routes to a clear owner is worth more than a firehose everyone mutes.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · Where should the Postgres password for RetailPulse live?</p>
+      <button class="qopt" type="button">A · Hardcoded in docker-compose.yml so the stack is self-contained</button>
+      <button class="qopt" type="button">B · In a gitignored .env (or a secret manager), injected as an environment variable at runtime - never committed to Git</button>
+      <button class="qopt" type="button">C · In a comment in pipeline.py so teammates can find it</button>
+      <p class="qwhy">A committed secret is compromised forever because history keeps it. Config as code goes in Git; secret values are injected at runtime from .env or a secret manager, so os.environ[...] stays the same either way.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 7 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Three signals</b><span>Logs (what happened) · metrics (how much/how fast) · lineage (what depends on what).</span></div>
+      <div class="cheat-item"><b>Five pillars of data observability</b><span>Freshness · volume · schema · distribution · lineage. The data lens app monitoring misses.</span></div>
+      <div class="cheat-item"><b>App vs data observability</b><span>Service can be HTTP 200 and fast while the data is stale and wrong. Watch both.</span></div>
+      <div class="cheat-item"><b>Alerts worth having</b><span>Pipeline failed · stale (freshness) · row count out of band (volume) · schema changed · drift high.</span></div>
+      <div class="cheat-item"><b>Beat alert fatigue</b><span>Alert on symptoms users feel, route to the owner, delete alerts nobody acts on.</span></div>
+      <div class="cheat-item"><b>Secrets</b><span>Never in Git. Env vars + gitignored .env (commit .env.example); secret manager when shared or prod.</span></div>
+      <div class="cheat-item"><b>IaC</b><span>docker-compose.yml is lightweight IaC - one command stands the whole stack up. Terraform is the cloud step.</span></div>
+      <div class="cheat-item"><b>Running project</b><span>RetailPulse v0.7: observable, alerting, secrets clean, one-command stack. Next: b8 full CD + capstone.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 7 of 8 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="b6-model-deploy-monitor.html">← b6 · Deploy &amp; monitor</a> &nbsp;·&nbsp; <a href="b8-full-cd-capstone.html">Next: Full CD to prod - the capstone →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

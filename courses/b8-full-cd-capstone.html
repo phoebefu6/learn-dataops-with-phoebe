@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 8 · Full CD to prod: the capstone - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Builder session 8 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Builder track · Session 8 of 8</div>
+    <h1>Full CD to prod: <span class="accent">the capstone</span></h1>
+    <p class="sub">This is graduation. Across seven sessions RetailPulse grew a spine, an orchestrator, data contracts, a versioned database, a tracked model, a monitored endpoint, and an observable, secret-clean, one-command stack. Tonight you tie every pillar together and promote it to production safely - as one release, through a gated pipeline, with a rollback plan. This is the <span style="color:#F87171;font-weight:700">hardest</span> session, because in DataOps the code, the schema, and the model all have to move in lockstep. Ship RetailPulse v1.0.</p>
+    <div class="chip-row">
+      <span class="chip level">🔴 Builder track · hardest · capstone</span>
+      <span class="chip audience">Practitioners: DA · DE · DS · ML</span>
+      <span class="chip audience">GitHub Actions · Docker · Postgres · MLflow · staging + prod</span>
+      <span class="chip time">RetailPulse v0.7 -> v1.0</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-20 · Environments &amp; lockstep release</span>
+      <span class="a3" style="flex:5">20-42 · Build-along: CD + tag v1.0</span>
+      <span class="a4" style="flex:1">42-45 · Graduation</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>The last mile</h2>
+    </div>
+    <p class="lede">RetailPulse can do everything except the thing that scares people most: go to production on purpose, safely, on a random Tuesday. Seven sessions built the pieces. Tonight assembles them into a release. The hard truth of DataOps - the reason this is the last and hardest session - is that a data product is not one artifact. It is code, a schema, and a model, and they must all promote together, in the right order, or the release corrupts data instead of shipping value.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill peach">★ Try it now command</span>
+      <span class="pill inkpill">Open-source stack + AWS notes</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A dev -> staging -> prod promotion path, a release that bundles a pipeline change, a schema migration, and a model version and moves them as one unit, a GitHub Actions CD workflow with a manual approval gate on prod, an end-to-end run proven in staging, and a tagged, promoted <strong>RetailPulse v1.0</strong>. This is the capstone: every pillar of the track, tied together, in production. You graduate.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: ENVIRONMENTS ============ -->
+  <section class="section" id="environments">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers dev -> staging -> prod and environment parity</span>
+      <h2>Environments: dev -> staging -> prod <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Production is not where you experiment. A change earns its way there through environments that get progressively closer to real: dev, where you build and break things; staging, a faithful mirror of prod where you prove the whole release end to end; and prod, where real users and real money live. What promotes between them is not just code - it is the code, the data config, the model version, and the schema, moving together.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three environments dev staging and prod with code data config model and schema promoting between them, staging mirroring prod">
+        <style>
+          .b8eT { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
+          .b8eL { font: 400 12.5px Inter, sans-serif; fill: #CCFBF1; }
+          .b8eX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b8eP { font: 600 12px Inter, sans-serif; fill: #134E4A; }
+          .b8eN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b8eArr { stroke: #CBD5E1; stroke-width: 3; fill: none; marker-end: url(#b8eAh); }
+        </style>
+        <defs>
+          <marker id="b8eAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="70" width="200" height="80" rx="12" fill="#134E4A"/>
+        <text class="b8eT" x="54" y="102">dev</text>
+        <text class="b8eL" x="54" y="124">build &amp; break freely</text>
+        <text class="b8eL" x="54" y="142">fast, disposable</text>
+        <rect x="340" y="70" width="200" height="80" rx="12" fill="#0F766E"/>
+        <text class="b8eT" x="364" y="102">staging</text>
+        <text class="b8eL" x="364" y="124">mirrors prod exactly</text>
+        <text class="b8eL" x="364" y="142">prove the whole release</text>
+        <rect x="650" y="70" width="200" height="80" rx="12" fill="#2DD4BF"/>
+        <text class="b8eT" x="674" y="102" fill="#0F172A">prod</text>
+        <text class="b8eL" x="674" y="124" fill="#134E4A">real users, real money</text>
+        <text class="b8eL" x="674" y="142" fill="#134E4A">gated promotion</text>
+        <line class="b8eArr" x1="232" y1="110" x2="338" y2="110"/>
+        <line class="b8eArr" x1="542" y1="110" x2="648" y2="110"/>
+        <rect x="235" y="40" width="100" height="22" rx="6" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b8eP" x="245" y="55">promotes:</text>
+        <text class="b8eX" x="235" y="182">code · data config · model version · schema - together</text>
+        <text class="b8eX" x="545" y="182">manual approval gate</text>
+        <rect x="30" y="228" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b8eN" x="54" y="240">Staging must mirror prod. A release proven in a staging that lies is a release proven nowhere.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - three environments and what promotes between them, as one bundle</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Environment parity: why staging must mirror prod<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Staging exists for one reason: to let you find out what a release does <em>before</em> real users do. That only works if staging is a faithful copy of prod. The moment staging drifts - a different Postgres version, a smaller dataset, a missing env var - it starts lying to you, and a green staging run stops meaning "prod will be fine."</p>
+        <ul>
+          <li><strong>Same shape, smaller scale.</strong> Staging runs the same images, the same schema, the same migrations, and a representative sample of real data - never a toy dataset that hides volume and distribution bugs.</li>
+          <li><strong>Same config mechanism.</strong> Staging and prod read secrets and settings the same way (env vars from a secret manager), so "it worked in staging" is a real signal, not luck.</li>
+          <li><strong>Promotion, not rebuild.</strong> You promote the <em>same</em> built image from staging to prod. Rebuilding for prod reintroduces the "works in staging" gap you just closed.</li>
+          <li><strong>Dev is disposable, prod is precious.</strong> dev optimizes for speed and iteration; prod optimizes for safety and reversibility. Staging is the bridge that keeps the two honest.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The migration that only broke at scale.</strong> A team tested a schema change on a 500-row staging table. Green. In prod the same migration locked a 40-million-row table for eleven minutes and took checkout down. The bug was never in the code - it was in a staging environment that did not mirror prod's data volume. Parity is not pedantry; it is the difference between a caught bug and an outage.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>How many environments do you actually need<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Three (dev, staging, prod) is the sensible default for a data team. Smaller shops sometimes collapse dev and staging; larger ones add a pre-prod or a per-developer ephemeral environment spun up from the same IaC. The number matters less than the principle: at least one environment between "my laptop" and "real users" that is close enough to prod to trust. If you only have laptop and prod, prod <em>is</em> your staging - and your users are your testers.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: LOCKSTEP RELEASE ============ -->
+  <section class="section" id="lockstep">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers releasing data, model, and DB together</span>
+      <h2>Releasing data, model, and database together <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Here is what makes DataOps genuinely harder than DevOps. Shipping an app is shipping code. Shipping a data product is shipping a pipeline change, a schema migration, and a model version - three artifacts that depend on each other and must promote as one unit, in the right order. Get the order wrong and you deploy code that reads a column the migration has not added yet, or serve a model trained on a schema prod does not have.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A release bundles pipeline change schema migration and model version promoted as one unit in the order migrate expand deploy backfill switch with blue-green safety">
+        <style>
+          .b8rT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b8rI { font: 700 13px Inter, sans-serif; fill: #0F172A; }
+          .b8rL { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .b8rX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b8rN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b8rArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b8rAh); }
+        </style>
+        <defs>
+          <marker id="b8rAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="30" width="240" height="100" rx="12" fill="#0F766E"/>
+        <text class="b8rT" x="54" y="58">One release bundle</text>
+        <text class="b8rL" x="54" y="80">· pipeline change</text>
+        <text class="b8rL" x="54" y="98">· schema migration</text>
+        <text class="b8rL" x="54" y="116">· model version</text>
+        <text class="b8rX" x="30" y="150">promoted as ONE unit</text>
+        <rect x="340" y="40" width="130" height="42" rx="10" fill="#134E4A"/>
+        <text class="b8rT" x="360" y="66">1 · migrate</text>
+        <rect x="490" y="40" width="130" height="42" rx="10" fill="#134E4A"/>
+        <text class="b8rT" x="510" y="66">2 · deploy</text>
+        <rect x="640" y="40" width="120" height="42" rx="10" fill="#134E4A"/>
+        <text class="b8rT" x="660" y="66">3 · backfill</text>
+        <rect x="640" y="100" width="120" height="42" rx="10" fill="#14B8A6"/>
+        <text class="b8rT" x="660" y="126">4 · switch</text>
+        <line class="b8rArr" x1="472" y1="61" x2="488" y2="61"/>
+        <line class="b8rArr" x1="622" y1="61" x2="638" y2="61"/>
+        <line class="b8rArr" x1="700" y1="84" x2="700" y2="98"/>
+        <text class="b8rX" x="340" y="102">expand first - add, do not drop, so old code still works mid-release</text>
+        <rect x="340" y="170" width="420" height="60" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b8rI" x="360" y="196">Safety pattern</text>
+        <text class="b8rX" x="360" y="216">blue-green · canary · shadow - new runs beside old, switch when proven</text>
+        <rect x="30" y="256" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b8rN" x="54" y="268">Data, schema, and model move in lockstep. Order matters: expand -> deploy -> backfill -> switch.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - a release as one bundle, promoted in a safe order with blue-green switching</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The lockstep problem, and the order that solves it<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The hard part of DataOps is that the three artifacts are coupled. The pipeline writes a new column; the migration must create it first; the model expects it to exist. Deploy them in the wrong order and something reads a column that is not there yet. The safe sequence is <strong>expand -> deploy -> backfill -> switch</strong>, built on the expand/contract migration pattern from b4:</p>
+        <ul>
+          <li><strong>Migrate (expand):</strong> add the new column or table - additive only, nothing dropped. Old code keeps working because you have taken nothing away.</li>
+          <li><strong>Deploy:</strong> ship the new pipeline and model, which can now use the new column. Both old and new schema coexist for this window.</li>
+          <li><strong>Backfill:</strong> populate the new column for historical rows so the model sees complete data.</li>
+          <li><strong>Switch:</strong> cut traffic to the new version. Only now, in a later release, do you contract - drop the old column once nothing reads it.</li>
+        </ul>
+        <p>Wrap the switch in a <strong>safety pattern</strong> so a bad release is reversible: <em>blue-green</em> (run new beside old, flip the pointer, flip back instantly on trouble), <em>canary</em> (send 5% of traffic first, watch, then ramp), or <em>shadow</em> (run the new model on real traffic without serving it, compare, then promote). All three share one goal: never make production the first place a release runs unguarded.</p>
+        <div class="prompt-box good"><span class="label">★ Try it now - the release order as a checklist</span># RetailPulse release order (never reorder these)
+# 1. alembic upgrade head        # expand: add column, additive only
+# 2. deploy new image            # pipeline + model that use it
+# 3. python backfill.py          # fill history for the new column
+# 4. flip traffic (blue -&gt; green) # switch, reversible in seconds
+# 5. (next release) drop old col  # contract, only when nothing reads it</div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Blue-green vs canary vs shadow - which when<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>Blue-green</strong> is simplest and best when you can hold two full copies and want instant rollback - flip a pointer, done. <strong>Canary</strong> fits when you want to limit blast radius and have good metrics to watch as you ramp. <strong>Shadow</strong> is the model-specific gem: run the new forecast model on real traffic without serving its output, compare predictions to the live model and to what actually happened, and promote only when it wins. For RetailPulse's demand forecast, shadow is how you prove a new model is better on real data before a single customer sees it.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: GRADUATION CHECKLIST ============ -->
+  <section class="section" id="scorecard">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers the DataOps scorecard RetailPulse now passes</span>
+      <h2>The graduation checklist <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">Step back and look at what RetailPulse is now. Every capability that separates a hobby script from an industrialized data product is present and connected. This is the DataOps scorecard - the one you can hold up in any review to say "this data product is mature." Session by session, you built each row by hand.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The DataOps scorecard RetailPulse now passes<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Capability</th><th>What it means</th><th>Built in</th></tr></thead>
+          <tbody>
+            <tr><td>Version control</td><td>All code, config, SQL in Git; protected main</td><td>b1</td></tr>
+            <tr><td>CI</td><td>Lint + test gate on every PR</td><td>b1</td></tr>
+            <tr><td>Orchestration</td><td>Pipeline scheduled and retried as a DAG</td><td>b2</td></tr>
+            <tr><td>Data tests + contract</td><td>Great Expectations suite + a data contract</td><td>b3</td></tr>
+            <tr><td>Versioned schema</td><td>Migrations, reversible, in Git</td><td>b4</td></tr>
+            <tr><td>Tracked + registered model</td><td>Experiments logged, model in a registry</td><td>b5</td></tr>
+            <tr><td>Serving + monitoring</td><td>FastAPI /predict, Evidently drift, retrain trigger</td><td>b6</td></tr>
+            <tr><td>Observability + alerts</td><td>Structured logs, freshness/volume, routed alerts</td><td>b7</td></tr>
+            <tr><td>Secrets</td><td>Out of Git, in .env / a secret manager</td><td>b7</td></tr>
+            <tr><td>Promotion to prod</td><td>Gated CD, staging parity, safe lockstep release</td><td>b8 - tonight</td></tr>
+          </tbody>
+        </table>
+        <p>Ten rows. Every one green. That is not a demo - that is a production-grade data product, and you can defend every line of it because you built it yourself and felt it break first.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What a mature next step looks like<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>RetailPulse v1.0 is a real, defensible platform - but there is always a next altitude. When you are ready:</p>
+        <ul>
+          <li><strong>Feature store</strong> (Feast): so the features the model trains on and serves on are provably the same, killing training-serving skew for good.</li>
+          <li><strong>Streaming:</strong> move from a nightly batch to near-real-time ingestion (Kafka, Kinesis) when the business needs fresher-than-daily.</li>
+          <li><strong>Full IaC:</strong> promote your Docker Compose to Terraform-managed cloud infra, so prod itself is reproducible from code, not clicks.</li>
+        </ul>
+        <p>None of these are prerequisites for shipping. They are the direction of travel once v1.0 is live and earning trust. Ship first, then climb.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>A promotion workflow <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">RetailPulse v1.0, part one: a GitHub Actions CD workflow. On every merge to <code>main</code> it builds, tests, and pushes the image, then deploys to staging automatically. On a version tag it promotes that same image to prod - but only after a human clicks approve on a protected environment. Automation for speed, a gate for safety.</p>
+
+    <div class="steps">
+      <div class="step"><p>Create a <code>staging</code> and a <code>production</code> environment in GitHub (Settings -> Environments). Add a required reviewer to <code>production</code> - that reviewer is the manual approval gate.</p></div>
+      <div class="step"><p>Write <code>.github/workflows/cd.yml</code> (Prompt A). The <code>deploy-staging</code> job triggers on push to <code>main</code>: build, test, push the image, deploy to staging.</p></div>
+      <div class="step"><p>Add a <code>promote-prod</code> job that triggers only on a tag matching <code>v*</code> and targets the <code>production</code> environment - so it pauses for the required-reviewer approval before it runs.</p></div>
+      <div class="step"><p>Promote the <em>same</em> image by digest, not a rebuild. Rebuilding for prod would reintroduce the staging-parity gap from Part 1.</p></div>
+      <div class="step"><p>Merge a trivial PR and watch it flow to staging with no human. Then push a tag and watch prod wait on the approval button. That pause is the whole point.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt A - .github/workflows/cd.yml (auto to staging, gated to prod)</span>name: CD
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+    outputs: { image: ${{ steps.meta.outputs.image }} }
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install -e ".[dev]" &amp;&amp; pytest -q
+      - id: meta
+        run: echo "image=ghcr.io/${{ github.repository }}:${{ github.sha }}" &gt;&gt; "$GITHUB_OUTPUT"
+      - run: docker build -t "${{ steps.meta.outputs.image }}" . &amp;&amp; docker push "${{ steps.meta.outputs.image }}"
+
+  deploy-staging:
+    needs: build-test-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: staging               # deploys automatically
+    steps:
+      - run: ./deploy.sh staging "${{ needs.build-test-push.outputs.image }}"
+
+  promote-prod:
+    needs: build-test-push
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: production            # required reviewer = manual approval gate
+    steps:
+      - run: ./deploy.sh prod "${{ needs.build-test-push.outputs.image }}"</div>
+
+    <div class="callout tip">
+      <strong>Data tip</strong>
+      Promote the exact image the staging run proved - reference it by SHA or digest, never rebuild for prod. The one artifact that passed staging is the one that goes live. A rebuild is a different artifact that nobody tested.
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>End-to-end release and tag v1.0 <span class="tag demo">★ 10 min · the capstone</span></h2>
+    </div>
+    <p class="lede">RetailPulse v1.0, part two: run the entire product end to end in staging - migrate, ingest, test, train and register, deploy, monitor - verify it, then tag <code>v1.0</code> and let the gated pipeline promote it to prod. This is the moment every session has been building toward.</p>
+
+    <div class="steps">
+      <div class="step"><p>In staging, run the release order from Part 2: <code>alembic upgrade head</code> (expand), trigger the Airflow DAG to ingest, let Great Expectations gate quality, retrain and register the model in MLflow.</p></div>
+      <div class="step"><p>Deploy the new image to staging, hit <code>/predict</code>, and confirm the forecast is sane. Check the b7 freshness and volume alerts stay quiet - a green observability layer is part of "verified."</p></div>
+      <div class="step"><p>Run the end-to-end smoke script (Prompt B) that walks the whole chain and fails loudly on any broken link. Green means the release is real, not hopeful.</p></div>
+      <div class="step"><p>Tag it: <code>git tag v1.0 &amp;&amp; git push origin v1.0</code>. The CD workflow's <code>promote-prod</code> job fires and pauses on the approval gate.</p></div>
+      <div class="step"><p>Approve the promotion. RetailPulse v1.0 is in production - code, schema, and model, promoted in lockstep, reversible if anything turns red. You shipped. You graduated.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt B - release_e2e.sh, prove the whole chain in staging</span>#!/usr/bin/env bash
+set -euo pipefail   # fail loudly on the first broken link
+
+echo "1/6 migrate (expand)"      &amp;&amp; alembic upgrade head
+echo "2/6 ingest"                &amp;&amp; airflow dags trigger retailpulse_daily --conf '{"env":"staging"}'
+echo "3/6 data tests + contract" &amp;&amp; python -m retailpulse.validate --suite sales_contract
+echo "4/6 train + register"      &amp;&amp; python -m retailpulse.train --register --stage Staging
+echo "5/6 deploy + serve"        &amp;&amp; ./deploy.sh staging "$IMAGE" &amp;&amp; \
+    curl -fsS localhost:8000/predict -d '{"store":7,"week":30}' &gt; /dev/null
+echo "6/6 monitor quiet"         &amp;&amp; python -m retailpulse.monitor --exit-nonzero-on-alert
+
+echo "✓ end-to-end green in staging - safe to tag v1.0"</div>
+
+    <div class="prompt-box good"><span class="label">★ Capstone checklist - self-verify RetailPulse v1.0</span># You have graduated when ALL of these are true:
+[x] main is protected; CI green on every PR            (b1)
+[x] pipeline runs as a scheduled, retried DAG          (b2)
+[x] data contract + GE suite gate every load           (b3)
+[x] schema changes ship as reversible migrations       (b4)
+[x] model is tracked and registered, not a pickle      (b5)
+[x] /predict served in Docker, drift-monitored         (b6)
+[x] logs/metrics/alerts route to an owner; secrets safe (b7)
+[x] one gated CD pipeline promotes to prod, reversibly  (b8)
+[x] v1.0 tagged and live in production                  <- you are here</div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The release that stopped being scary.</strong> A retail data team used to schedule "the model update" as a quarterly all-hands event with a rollback runbook and crossed fingers. After they built exactly this - staging parity, a lockstep release order, a gated CD pipeline with blue-green switch - a model promotion became a Tuesday afternoon tag and an approval click. The technology did not just make releases safer; it made them boring. Boring releases are the real trophy of DataOps.</p>
+    </div>
+    <div class="callout tip">
+      <strong>☁️ AWS mapping</strong>
+      The same promotion discipline, on AWS: <strong>CodePipeline</strong> orchestrates the stages and <strong>CodeDeploy</strong> performs the deploy; the manual approval gate becomes a <strong>manual approval action</strong> in the pipeline (or an environment protection rule); and the blue-green switch runs natively on <strong>ECS</strong> (or via CodeDeploy's blue-green deployment). Different buttons, identical idea: build once, prove in staging, promote the same artifact to prod behind a human gate, keep it reversible.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework · graduate RetailPulse</span>
+      <h2>Try it yourself - graduate RetailPulse <span class="tag exercise">◐ 45-60 min total</span></h2>
+    </div>
+    <ul>
+      <li>Finish the capstone: run <code>release_e2e.sh</code> green in staging, then tag <code>v1.0</code> and approve the promotion. Cross every box on the capstone checklist yourself.</li>
+      <li>Break the gate on purpose: push a tag with a failing smoke test and confirm the promotion never reaches prod. A gate you have not tested is not a gate.</li>
+      <li>Add a one-line rollback to <code>deploy.sh</code> (re-point to the previous image) and rehearse it once. The confidence to ship comes from the confidence to un-ship.</li>
+      <li>What to build next: pick one from the mature-next-step card - a Feast feature store, a streaming source, or Terraform for prod - and sketch how it slots into RetailPulse. You now have the spine to hang it on.</li>
+      <li>Write your own one-paragraph "DataOps scorecard" for a real project at work. You now know all ten rows and can tell which are green.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This track teaches DataOps on an open-source stack from the tools' official docs, with AWS mapping notes. This capstone covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Environments + environment parity</span><span class="note">Part 1 · dev -> staging -> prod, staging mirrors prod</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Lockstep release: data + schema + model</span><span class="note">Part 2 · expand -> deploy -> backfill -> switch, blue-green/canary/shadow</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">GitHub Actions CD + environment protection</span><span class="note">Demo 1 · auto to staging, manual gate to prod</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The DataOps scorecard</span><span class="note">Part 3 · the ten capabilities RetailPulse now passes</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">CodePipeline / CodeDeploy / ECS blue-green mapping</span><span class="note">Demo 2 sidebar · concept parity, not a full AWS tutorial</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you graduate 🎓 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Why must staging mirror prod as closely as possible?</p>
+      <button class="qopt" type="button">A · So developers have a second place to experiment freely</button>
+      <button class="qopt" type="button">B · So a green staging run actually predicts prod behavior; if staging drifts (version, data volume, config), it lies and bugs slip through</button>
+      <button class="qopt" type="button">C · Because GitHub requires three environments</button>
+      <p class="qwhy">A migration tested on 500 staging rows can lock a 40-million-row prod table. Parity - same images, schema, config mechanism, representative data - is what makes "it worked in staging" a real signal instead of luck.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · What makes releasing a data product harder than releasing an app?</p>
+      <button class="qopt" type="button">A · Data products have more lines of code</button>
+      <button class="qopt" type="button">B · There is no difference; a release is a release</button>
+      <button class="qopt" type="button">C · Code, schema, and model are coupled and must promote as one unit in the right order (expand -> deploy -> backfill -> switch)</button>
+      <p class="qwhy">Ship them out of order and code reads a column the migration has not added, or a model serves on a schema prod does not have. The lockstep and the ordering are the hard, DataOps-specific part.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · What does the manual approval gate on the production environment give you?</p>
+      <button class="qopt" type="button">A · A human checkpoint before a tagged release reaches prod, so promotion is automated for speed but still requires a deliberate approval for safety</button>
+      <button class="qopt" type="button">B · Faster builds, because it skips the tests</button>
+      <button class="qopt" type="button">C · It rebuilds the image fresh for production</button>
+      <p class="qwhy">Merge to main deploys to staging automatically; a version tag pauses on a required reviewer before prod. Automation handles the repetitive work; the gate keeps a human in the loop for the one step that touches real users.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 8 cheat sheet <span>· pin this · you graduated</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Three environments</b><span>dev (build/break) -> staging (mirror prod, prove it) -> prod (real users, gated).</span></div>
+      <div class="cheat-item"><b>Environment parity</b><span>Staging must match prod: same images, schema, config, representative data. A staging that lies proves nothing.</span></div>
+      <div class="cheat-item"><b>The lockstep problem</b><span>Code + schema + model are coupled; promote as one release, in the right order.</span></div>
+      <div class="cheat-item"><b>Release order</b><span>Migrate (expand) -> deploy -> backfill -> switch. Contract (drop old) only in a later release.</span></div>
+      <div class="cheat-item"><b>Safety patterns</b><span>Blue-green (instant rollback) · canary (ramp slowly) · shadow (prove a model on real traffic first).</span></div>
+      <div class="cheat-item"><b>Gated CD</b><span>Merge to main -> staging auto. Tag v* -> prod behind a manual approval gate. Promote the same image, never rebuild.</span></div>
+      <div class="cheat-item"><b>Running project</b><span>RetailPulse v1.0 - graduated. Ten scorecard rows green, promoted to prod in lockstep, reversible.</span></div>
+      <div class="cheat-item"><b>The whole track in one line</b><span>DataOps is DevOps discipline pointed at data - version, test, orchestrate, migrate, track, serve, observe, and promote code + schema + model together, safely, to prod.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 8 of 8 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="b7-observability-iac.html">← b7 · Observability &amp; IaC</a> &nbsp;·&nbsp; <a href="../index.html">Next: Back to all sessions - you shipped RetailPulse →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

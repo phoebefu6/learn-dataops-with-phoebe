@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 3 · Data testing and contracts - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Builder session 3 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Builder track · Session 3 of 8</div>
+    <h1>Data testing <span class="accent">and contracts</span></h1>
+    <p class="sub">Your code has tests. Your CI is green. And yet the pipeline can still ship garbage - because a green unit test proves your logic is correct, not that today's data is. Prices arriving as negatives, a region column suddenly full of nulls, yesterday's file never landing: none of that trips a code test. Tonight you give RetailPulse a second immune system - data tests that assert on the data itself, and a contract that turns "the producer changed the schema" from a silent Monday-morning disaster into a failed build.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: DA · DE · DS · ML</span>
+      <span class="chip audience">Python · Great Expectations · dbt tests · YAML</span>
+      <span class="chip time">v0.3</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-20 · Testing data vs code</span>
+      <span class="a3" style="flex:5">20-42 · Build-along: suite + gate</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where RetailPulse is tonight</h2>
+    </div>
+    <p class="lede">Recap: RetailPulse v0.2 is a scheduled, backfillable Airflow DAG - extract, clean, load, running daily, idempotent by date. The code is tested and the pipeline is orchestrated. But the pipeline trusts its input blindly. If the upstream sales export ships <code>quantity = -4</code> or drops the <code>region</code> column, RetailPulse cheerfully processes it and every dashboard downstream inherits the rot. Code tests cannot catch this, because the code did exactly what it was told. You need tests that look at the data.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill peach">★ Try it now command</span>
+      <span class="pill inkpill">Open-source stack + AWS notes</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A Great Expectations suite asserting the real invariants of RetailPulse - order ids present and unique, quantities and prices non-negative, dates not in the future, regions in a known set, row counts in a sane band - wired as a checkpoint that fails the Airflow run and the CI build when the data breaks. Plus a data contract YAML that makes the producer/consumer agreement explicit and enforceable.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: TESTING CODE VS DATA ============ -->
+  <section class="section" id="code-vs-data">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers why data needs its own tests</span>
+      <h2>Testing code vs testing data <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">A unit test checks logic that is fixed: given this input, does the function return that output. It runs once and stays true. A data test checks something that changes every single day: the actual rows flowing through the pipeline. Both are essential, and they catch completely different failures.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Code tests check fixed logic once; data tests check the changing data every run for nulls, ranges, freshness, volume, and schema">
+        <style>
+          .b3cT { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
+          .b3cI { font: 700 13px Inter, sans-serif; fill: #0F172A; }
+          .b3cL { font: 400 12.5px Inter, sans-serif; fill: #CCFBF1; }
+          .b3cX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b3cN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b3cArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b3cAh); }
+        </style>
+        <defs>
+          <marker id="b3cAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="45" width="250" height="110" rx="12" fill="#134E4A"/>
+        <text class="b3cT" x="54" y="74">Code tests</text>
+        <text class="b3cL" x="54" y="98">check logic - fixed</text>
+        <text class="b3cL" x="54" y="118">"clean_sales drops null ids"</text>
+        <text class="b3cL" x="54" y="138">runs once, stays true</text>
+        <rect x="30" y="170" width="250" height="70" rx="12" fill="#0F766E"/>
+        <text class="b3cT" x="54" y="198">Data tests</text>
+        <text class="b3cL" x="54" y="220">check the data - changes daily</text>
+        <rect x="360" y="55" width="490" height="185" rx="14" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b3cI" x="384" y="84">What data tests watch, every run:</text>
+        <text class="b3cI" x="384" y="116" font-weight="400">· Nulls - required fields present</text>
+        <text class="b3cI" x="384" y="140" font-weight="400">· Ranges - quantity &amp; price &gt;= 0</text>
+        <text class="b3cI" x="384" y="164" font-weight="400">· Freshness - is today's data here?</text>
+        <text class="b3cI" x="384" y="188" font-weight="400">· Volume - row count in expected band</text>
+        <text class="b3cI" x="384" y="212" font-weight="400">· Schema - columns &amp; types unchanged</text>
+        <line class="b3cArr" x1="282" y1="205" x2="358" y2="150"/>
+        <rect x="30" y="250" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b3cN" x="54" y="262">Green unit tests + bad data = broken dashboards. Data needs its own tests, run on every batch.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - two immune systems: logic tests once, data tests every run</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why data needs tests your code tests will never catch<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Your <code>test_pipeline.py</code> from b1 proves that <em>given</em> a null order id, clean_sales drops it. That is a fact about your code, and it stays true forever. It says nothing about whether today's file actually arrived, whether prices are suddenly negative, or whether the upstream team renamed a column overnight. Data fails in ways code cannot predict:</p>
+        <ul>
+          <li><strong>Nulls where you need values:</strong> a required field arrives empty because an upstream form changed.</li>
+          <li><strong>Out-of-range values:</strong> <code>quantity = -4</code>, <code>price = -19.99</code> - legal numbers, illegal for a sale.</li>
+          <li><strong>Freshness:</strong> the file simply did not land today; the pipeline happily reprocesses yesterday and everything looks green.</li>
+          <li><strong>Volume:</strong> a partial export delivers 200 rows instead of the usual 50,000 - no error, just quietly wrong totals.</li>
+          <li><strong>Schema drift:</strong> a column is renamed, dropped, or retyped upstream. Your code did nothing wrong; the shape underneath it moved.</li>
+        </ul>
+        <div class="prompt-box good"><span class="label">★ Try it now (your terminal)</span>pip install great_expectations
+great_expectations --version
+# We will point it at the clean_sales.parquet your b2 DAG produces.</div>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The negative-quantity return.</strong> A retailer's source system started encoding returns as negative quantities. The code had no bug - it summed exactly what it was given - so revenue quietly dropped 6% in every dashboard and nobody could find the cause for a week. A single data test, "quantity &gt;= 0 or flagged as a return", would have failed the very first batch and named the problem in one line. Data tests turn week-long mysteries into 40-second build failures.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The five dimensions of data quality<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A useful checklist when you write expectations for any dataset - not just RetailPulse:</p>
+        <table class="clean">
+          <thead><tr><th>Dimension</th><th>Question it asks</th><th>RetailPulse example</th></tr></thead>
+          <tbody>
+            <tr><td>Completeness</td><td>Are required values present?</td><td>order_id, region never null</td></tr>
+            <tr><td>Validity</td><td>Are values in the allowed set/range?</td><td>quantity &gt;= 0, region in known list</td></tr>
+            <tr><td>Uniqueness</td><td>Are keys actually unique?</td><td>order_id has no duplicates</td></tr>
+            <tr><td>Freshness</td><td>Is the data recent enough?</td><td>max(order_date) is today or yesterday</td></tr>
+            <tr><td>Volume</td><td>Is the row count sane?</td><td>within, say, 20% of the trailing average</td></tr>
+          </tbody>
+        </table>
+        <p>You will not test all five on every column. Pick the ones whose failure would actually hurt a decision - that is data-centric AI thinking applied to a pipeline.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: GE AND DBT TESTS ============ -->
+  <section class="section" id="ge-dbt">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers Great Expectations + dbt tests</span>
+      <h2>Great Expectations and dbt tests <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Two tools own this space. Great Expectations validates any DataFrame or table against a suite of expectations and gates the pipeline. dbt tests assert on models inside a SQL transformation layer. They overlap; knowing when each fits saves you from bolting on the wrong one.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An expectation suite sits between the cleaned data and the load step, passing green data through and blocking a run when an expectation fails">
+        <style>
+          .b3gT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b3gI { font: 700 13px Inter, sans-serif; fill: #0F172A; }
+          .b3gL { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .b3gX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b3gN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b3gArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b3gAh); }
+        </style>
+        <defs>
+          <marker id="b3gAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="75" width="150" height="60" rx="12" fill="#134E4A"/>
+        <text class="b3gT" x="54" y="102">clean_sales</text>
+        <text class="b3gL" x="54" y="121">the parquet</text>
+        <rect x="290" y="55" width="200" height="100" rx="12" fill="#0F766E"/>
+        <text class="b3gT" x="314" y="82">Expectation suite</text>
+        <text class="b3gL" x="314" y="104">not-null · unique</text>
+        <text class="b3gL" x="314" y="122">ranges · freshness</text>
+        <text class="b3gL" x="314" y="140">the checkpoint (gate)</text>
+        <rect x="600" y="40" width="240" height="55" rx="12" fill="#2DD4BF"/>
+        <text class="b3gI" x="624" y="64">All pass -&gt; load proceeds</text>
+        <text class="b3gI" x="624" y="83" font-weight="400" font-size="12">green data flows downstream</text>
+        <rect x="600" y="115" width="240" height="55" rx="12" fill="#134E4A"/>
+        <text class="b3gT" x="624" y="139">Any fail -&gt; run blocked</text>
+        <text class="b3gL" x="624" y="158">bad data never lands</text>
+        <line class="b3gArr" x1="182" y1="105" x2="288" y2="105"/>
+        <line class="b3gArr" x1="492" y1="95" x2="598" y2="70"/>
+        <line class="b3gArr" x1="492" y1="115" x2="598" y2="140"/>
+        <rect x="30" y="222" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b3gN" x="54" y="234">The suite is a gate between clean and load. Bad data fails the run instead of reaching a dashboard.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - an expectation suite as a quality gate in the pipeline</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Great Expectations vs dbt tests - when each fits<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p><strong>Great Expectations (GE)</strong> is a Python-native validation library. Three words carry it:</p>
+        <ul>
+          <li><strong>Expectation:</strong> one assertion about data, e.g. <code>expect_column_values_to_not_be_null("order_id")</code>. Human-readable, documents itself.</li>
+          <li><strong>Suite:</strong> a named bundle of expectations for a dataset - the full contract for RetailPulse's cleaned table.</li>
+          <li><strong>Checkpoint:</strong> the runnable gate that validates a batch against a suite and returns pass/fail. This is what your DAG and CI call.</li>
+        </ul>
+        <p><strong>dbt tests</strong> live inside a dbt SQL project and assert on models with four built-ins - <code>not_null</code>, <code>unique</code>, <code>accepted_values</code>, and <code>relationships</code> (foreign-key style). They are perfect when your transformations are already SQL models in a warehouse.</p>
+        <p><strong>When each fits:</strong> use GE when you are validating files/DataFrames in a Python pipeline (RetailPulse, tonight). Use dbt tests when your logic lives in dbt models in a warehouse. Many teams run both - GE at ingestion, dbt tests on the modeled layer. They are complements, not rivals.</p>
+        <table class="clean">
+          <thead><tr><th>Expectation for RetailPulse</th><th>Asserts</th></tr></thead>
+          <tbody>
+            <tr><td>order_id not null &amp; unique</td><td>every sale has one identity, no duplicates</td></tr>
+            <tr><td>quantity &gt;= 0</td><td>no negative quantities (returns handled separately)</td></tr>
+            <tr><td>price &gt;= 0</td><td>no negative prices</td></tr>
+            <tr><td>order_date not in the future</td><td>no time-travel rows from a bad clock</td></tr>
+            <tr><td>region in {North, South, East, West}</td><td>no typo'd or unknown regions</td></tr>
+            <tr><td>row count within expected band</td><td>partial export or duplicate load caught</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Expectations are documentation that runs<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The quiet superpower of an expectation suite is that it doubles as living documentation. <code>expect_column_values_to_be_between("price", 0, 10000)</code> tells the next engineer exactly what "valid" means for that column - and unlike a wiki page, it fails loudly the day reality drifts from the description. GE can even auto-generate a "Data Docs" HTML site from your suite, so the docs and the tests are literally the same artifact. When you write a data test, you are writing the spec everyone forgot to write.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: DATA CONTRACTS ============ -->
+  <section class="section" id="contracts">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers data contracts</span>
+      <h2>Data contracts <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">A data test protects you from bad data. A data contract prevents it - by making the agreement between whoever produces the data and whoever consumes it explicit, versioned, and enforced by the build. When the producer breaks the contract, their pipeline fails, not your dashboard three days later.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A producer and a consumer both sit against a shared contract of schema, expectations, owner, and SLA; breaking it fails the build">
+        <style>
+          .b3kT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b3kI { font: 700 13px Inter, sans-serif; fill: #0F172A; }
+          .b3kL { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .b3kX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b3kN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b3kArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b3kAh); }
+        </style>
+        <defs>
+          <marker id="b3kAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="70" width="170" height="70" rx="12" fill="#134E4A"/>
+        <text class="b3kT" x="54" y="100">Producer</text>
+        <text class="b3kL" x="54" y="120">sales export team</text>
+        <rect x="340" y="45" width="200" height="120" rx="14" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b3kI" x="364" y="72">Contract</text>
+        <text class="b3kI" x="364" y="96" font-weight="400" font-size="12">· schema + types</text>
+        <text class="b3kI" x="364" y="116" font-weight="400" font-size="12">· quality expectations</text>
+        <text class="b3kI" x="364" y="136" font-weight="400" font-size="12">· owner</text>
+        <text class="b3kI" x="364" y="156" font-weight="400" font-size="12">· SLA / freshness</text>
+        <rect x="680" y="70" width="170" height="70" rx="12" fill="#0F766E"/>
+        <text class="b3kT" x="704" y="100">Consumer</text>
+        <text class="b3kL" x="704" y="120">RetailPulse + dashboards</text>
+        <line class="b3kArr" x1="202" y1="105" x2="338" y2="105"/>
+        <line class="b3kArr" x1="542" y1="105" x2="678" y2="105"/>
+        <text class="b3kX" x="340" y="190">Break the contract -&gt; the build fails at the source. No silent drift into production.</text>
+        <rect x="30" y="202" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b3kN" x="54" y="214">Contract = schema + expectations + owner + SLA, agreed and enforced in CI.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - a contract as the enforced handshake between producer and consumer</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What a data contract actually is<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A data contract is a written, versioned agreement about a dataset, checked into Git like any other code. It has four parts:</p>
+        <ul>
+          <li><strong>Schema:</strong> the columns, their types, and which are required. "order_id: string, required; price: float, required."</li>
+          <li><strong>Quality expectations:</strong> the same assertions from your GE suite - not-null, ranges, allowed values - promised, not just hoped.</li>
+          <li><strong>Owner:</strong> a named team or person responsible. A dataset with no owner has no one to call when it breaks.</li>
+          <li><strong>SLA:</strong> the freshness and availability promise - "delivered by 5am daily, no more than 2 hours late."</li>
+        </ul>
+        <p>The point is enforcement: the contract runs in CI. If the producer changes the schema or violates an expectation, their build fails and they find out immediately - instead of the consumer discovering it in a board meeting. This is Zhamak Dehghani's data-mesh idea in miniature: producers own their data quality, and the contract is how that ownership is made real.</p>
+        <div class="callout tip">
+          <strong>Start with one contract</strong>
+          You do not contract every table on day one. Pick the one dataset whose breakage would hurt most - here, the cleaned sales table - write its contract, wire it into CI, and let the pattern spread. A contract nobody enforces is just a comment.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Contracts, schemas, and the tools around them<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Data contracts are a young, fast-moving space. You will see them expressed as plain YAML (what we use tonight), as JSON Schema, via the open <em>Data Contract Specification</em>, or through platform features in tools like dbt's model contracts and catalogs like DataHub or OpenMetadata. The format matters less than the discipline: a machine-readable spec, versioned in Git, enforced in CI, with a named owner. Once you have that, swapping YAML for a fancier standard later is a refactor, not a rethink. Do not wait for the perfect tool - a checked-in YAML that fails the build beats a Confluence page every time.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>A Great Expectations suite on clean_sales <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">Build the suite that encodes RetailPulse's real invariants and run it against the <code>clean_sales.parquet</code> your b2 DAG produces. You will validate not-null, uniqueness, ranges, allowed values, and freshness - and watch it pass on good data, then fail loudly on a poisoned row.</p>
+
+    <div class="steps">
+      <div class="step"><p>Load the cleaned parquet into a pandas DataFrame and wrap it as a GE validator (or use a GE pandas datasource pointed at the file).</p></div>
+      <div class="step"><p>Write the expectations from Prompt A: order_id not-null and unique, quantity and price non-negative, order_date not in the future, region in the allowed set, row count in a band.</p></div>
+      <div class="step"><p>Save the suite under a name like <code>retailpulse_clean_sales</code> and run it. On clean data every expectation should be green.</p></div>
+      <div class="step"><p>Poison one row on purpose - set a <code>quantity</code> to <code>-3</code> - and re-run. Watch that single expectation flip red and report exactly which rows failed and why.</p></div>
+      <div class="step"><p>Commit the suite into RetailPulse under <code>quality/</code>. It is now a versioned, reviewable artifact - the spec for what "clean" means.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt A - quality/build_suite.py (Great Expectations)</span>import datetime as dt
+import great_expectations as gx
+
+context = gx.get_context()
+batch = context.sources.add_or_update_pandas("rp") \
+    .add_parquet_asset("clean_sales", "data/clean_sales.parquet") \
+    .build_batch_request()
+
+v = context.get_validator(batch_request=batch,
+                          create_expectation_suite_with_name="retailpulse_clean_sales")
+
+# completeness &amp; uniqueness
+v.expect_column_values_to_not_be_null("order_id")
+v.expect_column_values_to_be_unique("order_id")
+v.expect_column_values_to_not_be_null("region")
+
+# validity / ranges
+v.expect_column_values_to_be_between("quantity", min_value=0)
+v.expect_column_values_to_be_between("price", min_value=0)
+v.expect_column_values_to_be_in_set(
+    "region", ["North", "South", "East", "West"])
+
+# freshness: no order_date in the future
+v.expect_column_values_to_be_between(
+    "order_date", max_value=str(dt.date.today()))
+
+# volume: sane row count for a daily batch
+v.expect_table_row_count_to_be_between(min_value=100, max_value=200000)
+
+v.save_expectation_suite(discard_failed_expectations=False)
+print("suite saved: retailpulse_clean_sales")</div>
+
+    <div class="callout tip">
+      <strong>Data tip</strong>
+      Set your ranges from real, non-confidential sample data - eyeball the trailing distribution, do not guess. An expectation that is too tight cries wolf; one too loose never fires. And keep using synthetic or public retail data in the teaching repo.
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Quality gate in CI plus a contract file <span class="tag demo">★ 10 min · build your own</span></h2>
+    </div>
+    <p class="lede">A suite that only runs when you remember it is useless. Now you wire the checkpoint into the Airflow DAG and CI so a breach fails the run, write a data contract YAML, and watch a pull request go red when an expectation breaks - exactly where you want to find out.</p>
+
+    <div class="steps">
+      <div class="step"><p>Add a <code>validate</code> task to the b2 DAG, between transform and load, that runs the GE checkpoint (Prompt B). If it fails, the task raises and load never runs - bad data cannot land.</p></div>
+      <div class="step"><p>Add the same checkpoint call to <code>ci.yml</code> as a step, so a PR that changes the pipeline is validated against sample data before it can merge.</p></div>
+      <div class="step"><p>Write <code>contracts/clean_sales.yml</code> from Prompt C: schema, expectations, owner, SLA. Check it into Git next to the code.</p></div>
+      <div class="step"><p>Open a PR that deliberately breaks an expectation - remove the <code>region</code> validation from the data, say - and watch CI go red with a message naming the failed expectation.</p></div>
+      <div class="step"><p>Fix it, see green, merge. RetailPulse is now v0.3: orchestrated, and quality-gated with an enforced contract.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt B - validate task in the DAG (fails the run)</span>@task
+def validate(clean_path: str) -&gt; str:
+    import great_expectations as gx
+    context = gx.get_context()
+    result = context.run_checkpoint(
+        checkpoint_name="retailpulse_checkpoint")   # runs the suite
+    if not result["success"]:
+        # raising fails the task -&gt; load never runs, bad data blocked
+        raise ValueError("Data quality gate failed - see GE Data Docs")
+    print("data quality gate passed")
+    return clean_path
+
+# wire it in: load(validate(transform(extract())))</div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt C - contracts/clean_sales.yml (data contract)</span>dataset: clean_sales
+version: 1
+owner: retail-data-platform-team
+sla:
+  freshness: "by 05:00 UTC daily"
+  max_delay: "2h"
+schema:
+  - name: order_id     {type: string,  required: true, unique: true}
+  - name: order_date   {type: date,    required: true}
+  - name: product      {type: string,  required: true}
+  - name: quantity     {type: integer, required: true}
+  - name: price        {type: float,   required: true}
+  - name: customer_id  {type: string,  required: true}
+  - name: region       {type: string,  required: true}
+expectations:
+  - order_id not null and unique
+  - quantity &gt;= 0
+  - price &gt;= 0
+  - order_date not in the future
+  - region in [North, South, East, West]
+  - row_count between 100 and 200000
+enforced_in: ci   # breaking this fails the build</div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The rename that failed at the source.</strong> An upstream team renamed <code>price</code> to <code>list_price</code> in their export. Before contracts, that broke a dozen dashboards silently and took three days to trace. After the contract went into CI, the producer's own build failed the moment they made the change - with a message saying "clean_sales contract: required column price missing." They fixed it in ten minutes, before it ever reached a consumer. The failure moved from the victim to the cause. That is the whole point.</p>
+    </div>
+    <div class="callout tip">
+      <strong>☁️ AWS mapping</strong>
+      Great Expectations maps to <strong>AWS Glue Data Quality</strong>, which uses a rule language called <strong>DQDL</strong> to assert on data inside Glue jobs, and to <strong>Deequ / PyDeequ</strong> for quality checks on Spark. The concept is identical whichever you use: declare the rules, run them as a gate, and fail the pipeline when the data breaks - so bad data never reaches a consumer.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 40-55 min total</span></h2>
+    </div>
+    <ul>
+      <li>Finish both demos if you did not live - especially the red PR. Everyone should watch a failed expectation block a merge at least once.</li>
+      <li>Add a freshness expectation that fails if <code>max(order_date)</code> is more than a day old - the classic "the file never arrived" catch.</li>
+      <li>Add a volume expectation tuned to your sample data's trailing average, then simulate a partial export (drop 80% of rows) and watch it fire.</li>
+      <li>Generate GE Data Docs from your suite and open the HTML. Notice that your tests are now also your documentation.</li>
+      <li>Optional reading: the Great Expectations "Get Started" tutorial and the dbt tests reference - now a review of what you already built.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This track teaches DataOps on an open-source stack from the tools' official docs, with AWS mapping notes. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Testing data vs testing code</span><span class="note">Part 1 · nulls, ranges, freshness, volume, schema drift</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Great Expectations: suites + checkpoints</span><span class="note">Part 2 + Demo 1 · expectations for RetailPulse</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Data contracts + CI enforcement</span><span class="note">Part 3 + Demo 2 · schema + expectations + owner + SLA</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">dbt tests</span><span class="note">Part 2 · not_null/unique/accepted_values/relationships, when to use</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Glue Data Quality / Deequ mapping</span><span class="note">Demo 2 sidebar · concept parity, not a full AWS tutorial</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Why is a green unit test not enough to trust a pipeline's output?</p>
+      <button class="qopt" type="button">A · Unit tests are too slow to run in CI</button>
+      <button class="qopt" type="button">B · A unit test checks fixed logic; it says nothing about whether today's actual data has nulls, bad ranges, missing freshness, or drifted schema</button>
+      <button class="qopt" type="button">C · Unit tests cannot run against parquet files</button>
+      <p class="qwhy">Code tests prove the logic is correct and stay true forever. Data tests check the changing data on every run - the two catch completely different failures, so you need both.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · In Great Expectations, what is a checkpoint?</p>
+      <button class="qopt" type="button">A · A single assertion about one column</button>
+      <button class="qopt" type="button">B · A backup of the dataset</button>
+      <button class="qopt" type="button">C · The runnable gate that validates a batch of data against a suite and returns pass/fail - what your DAG and CI call</button>
+      <p class="qwhy">An expectation is one assertion; a suite is a named bundle of them; a checkpoint is the runnable gate that executes the suite against a batch. The checkpoint is what fails your run.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · What makes a data contract different from just having data tests?</p>
+      <button class="qopt" type="button">A · It is a versioned, enforced agreement - schema + expectations + owner + SLA - so breaking it fails the producer's build, moving the failure to the cause instead of the victim</button>
+      <button class="qopt" type="button">B · It runs faster than expectations</button>
+      <button class="qopt" type="button">C · It replaces the need for any testing</button>
+      <p class="qwhy">Tests protect the consumer after the fact; a contract is the explicit producer-consumer agreement, enforced in CI, so the producer's build fails the moment they break it - before a consumer ever sees bad data.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 3 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Code vs data tests</b><span>Code tests check fixed logic once. Data tests check the changing data every run. You need both.</span></div>
+      <div class="cheat-item"><b>Five things to test</b><span>Nulls (completeness), ranges/sets (validity), keys (uniqueness), freshness, volume. Schema drift underneath all.</span></div>
+      <div class="cheat-item"><b>GE vocabulary</b><span>Expectation (one assertion) -> suite (a bundle) -> checkpoint (the runnable gate your DAG/CI calls).</span></div>
+      <div class="cheat-item"><b>GE vs dbt tests</b><span>GE for files/DataFrames in Python pipelines. dbt tests for SQL models in a warehouse. Often both.</span></div>
+      <div class="cheat-item"><b>Gate the pipeline</b><span>Run the checkpoint between clean and load; on failure raise so load never runs. Bad data never lands.</span></div>
+      <div class="cheat-item"><b>Data contract</b><span>Schema + expectations + owner + SLA, versioned in Git, enforced in CI. Breaking it fails the build.</span></div>
+      <div class="cheat-item"><b>AWS mapping</b><span>GE ≈ Glue Data Quality (DQDL) / Deequ (PyDeequ on Spark). Same concept: assert on data, fail the pipeline.</span></div>
+      <div class="cheat-item"><b>Running project</b><span>RetailPulse v0.3: quality-gated with an enforced contract. Next: b4 DBOps - schema migrations.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 3 of 8 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="b2-orchestration.html">← Orchestration</a> &nbsp;·&nbsp; <a href="b4-dbops-migrations.html">Next: DBOps - schema migrations that never break prod →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

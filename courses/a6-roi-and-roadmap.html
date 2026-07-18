@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 6 · Proving it: ROI and a 90-day roadmap - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Leader session 6 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Leader track · Session 6 of 6</div>
+    <h1>Proving it: <span class="accent">ROI and a 90-day roadmap</span></h1>
+    <p class="sub">A brilliant strategy that never gets funded is just a nice document. This final session is where you turn everything into a business case a board will actually back, and a plan modest enough to start on Monday. No code today: how to frame ROI as cost avoided plus value created, the short list of metrics a board genuinely believes, and a crawl-walk-run roadmap that buys an early trust win in the first thirty days. You leave with your first ninety days drafted.</p>
+    <div class="chip-row">
+      <span class="chip level">🤝 Leader track</span>
+      <span class="chip audience">C-level · managers · data leads</span>
+      <span class="chip" style="background:#FB923C;color:#fff">🟠 Deciding session</span>
+      <span class="chip time">The finale</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-30 · Business case + metrics</span>
+      <span class="a3" style="flex:4">30-42 · Draft your 90 days</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>From conviction to funding</h2>
+    </div>
+    <p class="lede">Across five sessions you have built genuine conviction: you can name the reliability tax, define DataOps, read a maturity model, choose a platform, and design the org around it. None of that matters until someone signs off the budget and a team starts on Monday. This session closes the loop. It is a deciding session because it produces two decisions: what to claim as return, and what to do first. Both need to be small, credible, and provable - a board funds evidence, not ambition.</p>
+    <div class="legend">
+      <span class="pill solid">Live - discussed in session</span>
+      <span class="pill light">Self-study - read after</span>
+      <span class="pill peach">★ Questions for your team</span>
+      <span class="pill inkpill">Strategy, not tooling</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A two-sided ROI story - cost avoided plus value created - that connects DataOps back to the reliability tax you named in session 1, the short set of metrics a board will actually believe (and the vanity metrics to avoid), and a crawl-walk-run 90-day roadmap that sequences the work to buy an early, visible trust win before you ask for the bigger commitment.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE BUSINESS CASE ============ -->
+  <section class="section" id="business-case">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the two-sided return</span>
+      <h2>The business case - cost avoided plus value created <span class="tag concept" style="background:#FFEDD5;color:#9A3412">10 min live</span></h2>
+    </div>
+    <p class="lede">Most DataOps business cases fail because they only tell one side of the story. Cost avoided - less firefighting, fewer incidents - is concrete and easy to defend, but on its own it sounds defensive. Value created - faster decisions, trusted self-service, new products - is where the excitement is, but on its own it sounds speculative. You need both halves to make the case land.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 285" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="DataOps ROI splits into two halves: cost avoided from less firefighting, fewer incidents and less rework, plus value created from faster decisions, trusted self-service and new products, together paying down the reliability tax">
+        <style>
+          .a6roT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a6roX { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .a6roI { font: 700 15px Inter, sans-serif; fill: #0F172A; }
+          .a6roM { font: 400 12px Inter, sans-serif; fill: #64748B; }
+          .a6roN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .a6roL { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#a6roAh); }
+        </style>
+        <defs>
+          <marker id="a6roAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <text class="a6roI" x="30" y="34">DataOps ROI has two halves</text>
+        <rect x="30" y="50" width="290" height="150" rx="14" fill="#134E4A"/>
+        <text class="a6roT" x="54" y="82">Cost avoided</text>
+        <text class="a6roX" x="54" y="110">· less firefighting</text>
+        <text class="a6roX" x="54" y="134">· fewer incidents</text>
+        <text class="a6roX" x="54" y="158">· less rework and reconciliation</text>
+        <text class="a6roX" x="54" y="182">concrete · defensible · pays down the tax</text>
+        <rect x="345" y="50" width="290" height="150" rx="14" fill="#0F766E"/>
+        <text class="a6roT" x="369" y="82">Value created</text>
+        <text class="a6roX" x="369" y="110">· faster decisions</text>
+        <text class="a6roX" x="369" y="134">· trusted self-service</text>
+        <text class="a6roX" x="369" y="158">· new data products</text>
+        <text class="a6roX" x="369" y="182">upside · the growth story</text>
+        <rect x="670" y="78" width="180" height="94" rx="14" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a6roI" x="694" y="112">Total ROI</text>
+        <text class="a6roM" x="694" y="136">both halves,</text>
+        <text class="a6roM" x="694" y="156">told together</text>
+        <line class="a6roL" x1="322" y1="118" x2="666" y2="118"/>
+        <line class="a6roL" x1="637" y1="140" x2="666" y2="132"/>
+        <rect x="30" y="252" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a6roN" x="54" y="264">Cost avoided pays down the session-1 reliability tax. Value created is the growth. Lead with one, close with both.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - ROI as cost avoided plus value created, together paying down the reliability tax</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>How to tell both halves credibly<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The connective tissue back to session 1 is the <strong>reliability tax</strong> - the hidden cost of fragile data you sized on day one. Cost avoided is literally paying that tax down; value created is what your people build once they are no longer paying it. Told together, the story is neither defensive nor speculative - it is complete.</p>
+        <ul>
+          <li><strong>Cost avoided is your anchor.</strong> Start here because it is concrete and hard to argue with. Fewer midnight fixes, fewer incidents reaching a leader, less time reconciling numbers by hand - each maps to hours and salaries you can put a real figure on. This is the reliability tax, being repaid.</li>
+          <li><strong>Value created is your upside.</strong> Once data is trusted and fast, decisions that used to wait now move; analysts self-serve instead of queuing; new data-driven products become possible. This half is less precise, so present it as a credible range, not a false decimal.</li>
+          <li><strong>The rule of the room:</strong> lead with cost avoided to earn belief, then close with value created to earn enthusiasm. A case that is all savings feels small; a case that is all upside feels like a gamble. Both together feels like a plan.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The one-line frame for the board</strong>
+          "DataOps pays down the reliability tax we are already paying, and frees the team to build the things we keep saying we do not have time for." Cost avoided funds it; value created is why it matters.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: METRICS ============ -->
+  <section class="section" id="metrics">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · numbers that land</span>
+      <h2>Metrics a board will believe <span class="tag concept" style="background:#FFEDD5;color:#9A3412">8 min live</span></h2>
+    </div>
+    <p class="lede">Boards have been shown too many impressive-looking dashboards that meant nothing. The metrics that earn trust are few, tied to the business, and honest about direction. A small set you can defend beats a wall of numbers you cannot. Here is the short list worth tracking - and the vanity metrics to keep off the slide.</p>
+
+    <table class="clean">
+      <thead><tr><th>Metric a board believes</th><th>What it shows</th><th>Why it lands</th></tr></thead>
+      <tbody>
+        <tr><td>Firefighting hours reduced</td><td>Time your team recovered from breakage back into real work</td><td>Directly repays the reliability tax - measurable in hours and salaries</td></tr>
+        <tr><td>Data incident rate</td><td>How often a data problem reaches a person or a decision</td><td>A falling line is trust becoming visible; boards understand incident counts</td></tr>
+        <tr><td>Lead time for a data change</td><td>How long from "we need this change" to it safely in production</td><td>Speed with safety, in one number - the DevOps metric boards already know</td></tr>
+        <tr><td>Data trust / adoption</td><td>Are leaders using the data, or going back to gut feel?</td><td>The ultimate outcome - unused data has zero return, however clean</td></tr>
+        <tr><td>Revenue or decisions enabled</td><td>Concrete decisions or products the improved data made possible</td><td>Connects DataOps to the top line, not just the cost line</td></tr>
+      </tbody>
+    </table>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The vanity metrics to leave off the slide<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A metric is vanity when it goes up and to the right without telling you whether anything got better. They feel good in a review and quietly erode your credibility when someone asks the follow-up question.</p>
+        <ul>
+          <li><strong>Number of pipelines built.</strong> More pipelines is activity, not outcome - it may even mean more sprawl to maintain. A board cares whether the data is trusted, not how many jobs run.</li>
+          <li><strong>Rows or terabytes processed.</strong> Volume flatters the engineering effort and says nothing about value or quality. Processing more bad data faster is not progress.</li>
+          <li><strong>Tools or dashboards launched.</strong> Shipping a dashboard nobody trusts or opens is negative return once you count the build cost. Adoption is the real metric hiding behind this one.</li>
+          <li><strong>Model accuracy in isolation.</strong> A precise model on data nobody acts on changes nothing. Tie it to a decision or leave it in the technical appendix.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The test for any metric</strong>
+          Ask: "If this number doubled, would a leader make a better decision or the business earn more?" If the honest answer is no, it is vanity - keep it out of the board pack, however good it looks.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THE ROADMAP ============ -->
+  <section class="section" id="roadmap">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · start small, prove fast</span>
+      <h2>A 90-day roadmap <span class="tag concept" style="background:#FFEDD5;color:#9A3412">6 min live</span></h2>
+    </div>
+    <p class="lede">You do not industrialise everything at once - that is how programmes stall before they show value. A crawl-walk-run roadmap sequences the work so the very first month buys a visible trust win, which funds the rest. Each phase builds on the last, and each ends with something you can point to.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 265" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A crawl-walk-run roadmap: days 0 to 30 add version control, CI and one quality gate for an early trust win; days 31 to 60 add orchestration and contracts on the top pipeline; days 61 to 90 add metrics and observability plus one MLOps or DBOps win">
+        <style>
+          .a6rdT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a6rdX { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .a6rdK { font: 700 12px Inter, sans-serif; fill: #FFFFFF; }
+          .a6rdN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .a6rdA { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#a6rdAh); }
+        </style>
+        <defs>
+          <marker id="a6rdAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <rect x="30" y="50" width="255" height="150" rx="14" fill="#134E4A"/>
+        <rect x="30" y="50" width="90" height="26" rx="8" fill="#0F766E"/>
+        <text class="a6rdK" x="46" y="68">Crawl</text>
+        <text class="a6rdT" x="46" y="102">Days 0-30</text>
+        <text class="a6rdX" x="46" y="128">· version control</text>
+        <text class="a6rdX" x="46" y="150">· CI on changes</text>
+        <text class="a6rdX" x="46" y="172">· one quality gate</text>
+        <text class="a6rdX" x="46" y="192" fill="#5EEAD4">= early trust win</text>
+        <rect x="312" y="50" width="255" height="150" rx="14" fill="#0F766E"/>
+        <rect x="312" y="50" width="90" height="26" rx="8" fill="#14B8A6"/>
+        <text class="a6rdK" x="328" y="68">Walk</text>
+        <text class="a6rdT" x="328" y="102">Days 31-60</text>
+        <text class="a6rdX" x="328" y="128">· orchestration</text>
+        <text class="a6rdX" x="328" y="150">· contracts on the</text>
+        <text class="a6rdX" x="328" y="168">  top pipeline</text>
+        <text class="a6rdX" x="328" y="192" fill="#CCFBF1">= reliable flagship flow</text>
+        <rect x="594" y="50" width="255" height="150" rx="14" fill="#14B8A6"/>
+        <rect x="594" y="50" width="90" height="26" rx="8" fill="#134E4A"/>
+        <text class="a6rdK" x="610" y="68">Run</text>
+        <text class="a6rdT" x="610" y="102">Days 61-90</text>
+        <text class="a6rdX" x="610" y="128">· metrics + observability</text>
+        <text class="a6rdX" x="610" y="150">· one MLOps or</text>
+        <text class="a6rdX" x="610" y="168">  DBOps win</text>
+        <text class="a6rdX" x="610" y="192" fill="#ECFDF9">= proof, ready to scale</text>
+        <line class="a6rdA" x1="287" y1="125" x2="310" y2="125"/>
+        <line class="a6rdA" x1="569" y1="125" x2="592" y2="125"/>
+        <rect x="30" y="235" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a6rdN" x="54" y="247">Sequence for early proof: the first 30 days must produce a visible trust win that funds the next 60.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - a crawl-walk-run 90-day roadmap, each phase ending in something you can point to</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why sequencing for early proof matters<span class="mini">3 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The order is deliberate. Each phase is chosen to be achievable in the time, to build on the one before, and - critically - to produce visible proof that keeps the funding flowing:</p>
+        <ul>
+          <li><strong>Days 0-30, crawl:</strong> put pipelines into version control, add continuous integration so changes are checked automatically, and stand up one quality gate on your most important dataset. This is deliberately modest, and it buys the fastest possible trust win - the day a bad number is caught before it reaches a leader, the programme has proven itself.</li>
+          <li><strong>Days 31-60, walk:</strong> add orchestration so the flow runs reliably on its own, and put a data contract on your top pipeline so its producers and consumers stop breaking each other silently. Now your flagship data flow is genuinely dependable.</li>
+          <li><strong>Days 61-90, run:</strong> add metrics and observability so you can see the health of your data, and land one MLOps or DBOps win - a model or a database change shipped the industrialised way. You now have a repeatable pattern and the evidence to scale it.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The sequencing principle</strong>
+          Front-load the cheapest, most visible win. A quality gate that catches one wrong number in month one earns more trust - and more budget - than a perfect architecture nobody sees for a year. Prove first, scale second. Momentum is a resource, and early proof is how you generate it.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ EXERCISE ============ -->
+  <section class="section" id="exercise-live">
+    <div class="section-kicker">
+      <span class="klabel">Boardroom exercise</span>
+      <h2>Draft your first 90 days <span class="tag demo">★ 12 min · draft together</span></h2>
+    </div>
+    <p class="lede">Do not leave with a strategy. Leave with a start. The whole leader track compresses into two concrete choices: the one pipeline you will industrialise first, and the one metric you will use to prove it worked. Pick both now, in the room, out loud.</p>
+
+    <div class="steps">
+      <div class="step"><p>Name the one pipeline to industrialise first. Choose the one that is both important and painful - high visibility if it breaks, and currently held together by manual effort. Do not pick the easiest; pick the one whose fix people will notice.</p></div>
+      <div class="step"><p>For that pipeline, write the crawl step: what does version control, CI, and one quality gate look like on it in the next 30 days? Keep it small enough to actually finish.</p></div>
+      <div class="step"><p>Choose the one metric you will use to prove the win. Pick from the board-credible list - firefighting hours, incident rate, lead time, adoption - and write down its value today so you have a baseline.</p></div>
+      <div class="step"><p>Sketch days 31-60 and 61-90 for the same pipeline: orchestration and a contract, then metrics and one MLOps or DBOps win. One pipeline, taken all the way, beats ten started.</p></div>
+      <div class="step"><p>Name the owner and the check-in date. A roadmap with no owner and no date is a wish. Assign both before you leave the room.</p></div>
+    </div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The one quality gate that funded the programme.</strong> A data leader left this exercise with exactly one commitment: a single quality gate on the revenue pipeline in thirty days. Three weeks later it caught a broken feed before the Monday board number went out. That one visible save - a wrong figure stopped before it reached the CEO - unlocked the budget for the full 90-day plan. They did not win with a roadmap. They won with one gate and one caught error.</p>
+    </div>
+  </section>
+
+  <!-- ============ QUESTIONS ============ -->
+  <section class="section" id="questions">
+    <div class="section-kicker">
+      <span class="klabel">Take this to work</span>
+      <h2>★ Questions to ask your data team - and yourself</h2>
+    </div>
+    <div class="callout win">
+      <strong>Five questions that turn strategy into a start</strong>
+      Ask your team the first three; ask yourself the last two. The answers are your business case and your Monday move.
+    </div>
+    <ul>
+      <li><strong>"What are we spending on firefighting today, and what would we recover by cutting it?"</strong> This is the cost-avoided anchor of your business case, in a number you can defend.</li>
+      <li><strong>"Which single pipeline, if it were bulletproof, would matter most to the business?"</strong> That is your first pipeline to industrialise - important and visible.</li>
+      <li><strong>"What is our data incident rate and lead time for a change right now?"</strong> If nobody knows, that baseline is your first thing to measure - you cannot prove improvement without it.</li>
+      <li><strong>"Am I about to present all savings or all upside?"</strong> A one-sided case is a weak case. Make sure you lead with cost avoided and close with value created.</li>
+      <li><strong>"What is the smallest, most visible win I can promise in thirty days?"</strong> Whatever it is, that is your Monday move - and the thing that funds everything after it.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This closing session draws on the DataOps ROI literature, DevOps delivery metrics, and staged-adoption roadmaps. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The DataOps business case</span><span class="note">Part 1 · cost avoided plus value created, tied to the reliability tax</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Board-credible metrics</span><span class="note">Part 2 · the short list, and the vanity metrics to avoid</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">A 90-day roadmap</span><span class="note">Part 3 · crawl-walk-run, sequenced for an early trust win</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The whole leader track</span><span class="note">a1-a6 · tax, pillars, maturity, platform, org, and proof</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Actually building it</span><span class="note">the builder track (b1-b8) industrialises RetailPulse for real</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · A DataOps ROI case is strongest when it...</p>
+      <button class="qopt" type="button">A · Focuses only on cost avoided, to stay conservative</button>
+      <button class="qopt" type="button">B · Focuses only on value created, to sound ambitious</button>
+      <button class="qopt" type="button">C · Tells both halves - cost avoided to earn belief, value created to earn enthusiasm</button>
+      <p class="qwhy">All savings feels small; all upside feels like a gamble. Lead with the concrete cost avoided that pays down the reliability tax, then close with the value created. Both together feels like a plan.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">2 · Which is a vanity metric a board should not be shown?</p>
+      <button class="qopt" type="button">A · Firefighting hours reduced</button>
+      <button class="qopt" type="button">B · Number of pipelines built</button>
+      <button class="qopt" type="button">C · Lead time for a data change</button>
+      <p class="qwhy">Pipelines built is activity, not outcome - more can even mean more sprawl. The test: if the number doubled, would a leader decide better or the business earn more? If not, keep it off the slide.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · The crawl-walk-run roadmap front-loads which work in days 0-30?</p>
+      <button class="qopt" type="button">A · Version control, CI, and one quality gate - for a fast, visible trust win</button>
+      <button class="qopt" type="button">B · A full MLOps platform and observability stack</button>
+      <button class="qopt" type="button">C · Rewriting every pipeline at once</button>
+      <p class="qwhy">The first month must produce a visible win - a bad number caught before it reaches a leader. That early proof funds the next sixty days. Prove first, scale second.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 6 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Two-sided ROI</b><span>Cost avoided (less firefighting, fewer incidents, less rework) + value created (faster decisions, self-service, new products).</span></div>
+      <div class="cheat-item"><b>The frame</b><span>Lead with cost avoided to earn belief; close with value created to earn enthusiasm. Both = a plan.</span></div>
+      <div class="cheat-item"><b>Tie back to a1</b><span>Cost avoided pays down the reliability tax you named in session 1. Value created is what the team builds once freed.</span></div>
+      <div class="cheat-item"><b>Metrics boards believe</b><span>Firefighting hours reduced, incident rate, lead time for a change, data trust/adoption, revenue/decisions enabled.</span></div>
+      <div class="cheat-item"><b>Vanity metrics to drop</b><span>Pipelines built, rows/TB processed, dashboards launched, model accuracy in isolation. Activity, not outcome.</span></div>
+      <div class="cheat-item"><b>90-day roadmap</b><span>Crawl (0-30): version control + CI + one quality gate. Walk (31-60): orchestration + contracts. Run (61-90): metrics + one MLOps/DBOps win.</span></div>
+      <div class="cheat-item"><b>Sequencing principle</b><span>Front-load the cheapest, most visible win. One caught error in month one earns more budget than a perfect architecture nobody sees.</span></div>
+      <div class="cheat-item"><b>Your Monday move</b><span>Pick one pipeline to industrialise first + one metric to prove it. Name an owner and a date. Prove first, scale second.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 6 of 6 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="a5-org-and-culture.html">← Previous: Who owns what - org design and data contracts</a> &nbsp;·&nbsp; <a href="../index.html">Next: Back to all sessions - or start the builder track →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 4 · Build, buy, or open-source: the platform bet - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Leader session 4 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Leader track · Session 4 of 6</div>
+    <h1>Build, buy, or <span class="accent">open-source</span></h1>
+    <p class="sub">This is the session where real money gets committed. Build your own platform, buy a managed one, or blend managed tooling with open-source - each door trades control, speed, and cost differently, and the salespeople in the room all have an incentive to simplify the choice for you. No code today: three doors and the bet each one makes, the honest total-cost picture nobody puts on a slide, and the case for converging on one governed platform instead of a tool zoo. You leave able to score the options yourself.</p>
+    <div class="chip-row">
+      <span class="chip level">🤝 Leader track</span>
+      <span class="chip audience">C-level · managers · data leads</span>
+      <span class="chip" style="background:#FB923C;color:#fff">🟠 Deciding session</span>
+      <span class="chip time">The platform bet</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-30 · Three doors + the cost picture</span>
+      <span class="a3" style="flex:4">30-42 · Score-the-option</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>The most expensive slide in the deck</h2>
+    </div>
+    <p class="lede">Sessions 1 to 3 built the case for DataOps and showed you what maturity looks like. This one asks the question that follows: what do we actually stand up, and who do we pay? It is a deciding session, so we treat it with care. The wrong platform bet is not fatal, but it is slow and costly to unwind - which is exactly why vendors want the decision made fast and emotionally. Your job is to slow it down and score it.</p>
+    <div class="legend">
+      <span class="pill solid">Live - discussed in session</span>
+      <span class="pill light">Self-study - read after</span>
+      <span class="pill peach">★ Questions for your team</span>
+      <span class="pill inkpill">Strategy, not tooling</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A clear map of the three doors - build, buy, and blend - and the single tradeoff each one makes, an honest total-cost-of-ownership picture that includes the people costs vendors leave off, the argument for converging on one governed platform rather than a sprawl of tools, and a scoring exercise you can run with your team to make the platform bet on evidence instead of the loudest voice in the room.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THREE DOORS ============ -->
+  <section class="section" id="three-doors">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the choice, framed</span>
+      <h2>Three doors, three bets <span class="tag concept" style="background:#FFEDD5;color:#9A3412">10 min live</span></h2>
+    </div>
+    <p class="lede">Every platform decision, under the branding, is one of three doors. Each door is a legitimate choice. What matters is knowing which tradeoff you are making with your eyes open, because you cannot optimise for control, speed, and cost all at once - pick two and the third gives way.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 285" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three doors: build your own trades speed and cost for control; buy managed trades control for speed; blend with open-source balances all three but needs skill">
+        <style>
+          .a4drH { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
+          .a4drX { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .a4drK { font: 700 12px Inter, sans-serif; fill: #64748B; }
+          .a4drN { font: 600 14px Inter, sans-serif; fill: #431407; }
+        </style>
+        <text class="a4drK" x="30" y="34">You optimise for two of three - the third gives way</text>
+        <rect x="30" y="48" width="255" height="150" rx="14" fill="#134E4A"/>
+        <text class="a4drH" x="54" y="82">Build your own</text>
+        <text class="a4drX" x="54" y="108">Optimise for: control</text>
+        <text class="a4drX" x="54" y="130">Gives way: speed + cost</text>
+        <text class="a4drX" x="54" y="158">Your stack, your rules -</text>
+        <text class="a4drX" x="54" y="176">and your whole payroll builds it</text>
+        <rect x="312" y="48" width="255" height="150" rx="14" fill="#0F766E"/>
+        <text class="a4drH" x="336" y="82">Buy managed</text>
+        <text class="a4drX" x="336" y="108">Optimise for: speed</text>
+        <text class="a4drX" x="336" y="130">Gives way: control + lock-in</text>
+        <text class="a4drX" x="336" y="158">Live in weeks, not quarters -</text>
+        <text class="a4drX" x="336" y="176">on someone else's roadmap</text>
+        <rect x="594" y="48" width="255" height="150" rx="14" fill="#14B8A6"/>
+        <text class="a4drH" x="618" y="82">Blend with OSS</text>
+        <text class="a4drX" x="618" y="108">Optimise for: balance</text>
+        <text class="a4drX" x="618" y="130">Gives way: needs real skill</text>
+        <text class="a4drX" x="618" y="158">Open-source core, managed</text>
+        <text class="a4drX" x="618" y="176">edges - if you have the team</text>
+        <rect x="30" y="256" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a4drN" x="54" y="268">There is no free door. Name the tradeoff you are choosing, out loud, before you sign.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the three doors and the single tradeoff each one makes</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Which door fits which organisation<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The right door depends less on your data and more on your team and your appetite for owning infrastructure. A concept to hold onto: <strong>you are not buying software, you are buying a relationship with a set of tradeoffs that will outlast the person who signed the contract.</strong></p>
+        <ul>
+          <li><strong>Build your own</strong> suits a small number of organisations - usually those where data infrastructure is the product, or where scale and specificity make every managed option a bad fit. It buys maximum control and pays for it in engineering years and key-person risk.</li>
+          <li><strong>Buy managed</strong> - Databricks, Snowflake, a managed cloud platform - suits most organisations that need value quickly and would rather rent expertise than build it. It buys speed and simplicity and pays for it in licence cost and lock-in.</li>
+          <li><strong>Blend with open-source</strong> suits teams strong enough to run infrastructure but unwilling to reinvent everything. It buys flexibility and cost control at scale and pays for it in the ongoing operational load of running the stack yourself.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The honest default</strong>
+          For most non-tech organisations early in their DataOps journey, buy-managed is the right first door - it lets you prove value before you have the team to run anything else. The blend door opens later, once maturity and scale make the ops cost worth carrying. Building your own is rarely the answer, and almost never the first answer.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE COST PICTURE ============ -->
+  <section class="section" id="cost-picture">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the number nobody slides</span>
+      <h2>OSS stack vs managed - the honest cost picture <span class="tag concept" style="background:#FFEDD5;color:#9A3412">10 min live</span></h2>
+    </div>
+    <p class="lede">The sticker price is the smallest part of the story. An open-source stack looks nearly free because its cost is in people and operations, which never appear on the licence line. A managed platform looks expensive because its cost is all on the invoice. Real total cost of ownership adds the hidden lines back in.</p>
+
+    <table class="clean">
+      <thead><tr><th>Cost driver</th><th>Open-source stack<br>(Airflow · dbt · Great Expectations · MLflow · Postgres)</th><th>Managed platform<br>(Databricks · Snowflake · managed cloud)</th></tr></thead>
+      <tbody>
+        <tr><td>Licensing / subscription</td><td>Low - the software is free to use</td><td>High - you pay per compute, seat, or credit, every month</td></tr>
+        <tr><td>Engineering time to run it</td><td>High - your team installs, upgrades, patches, and babysits the stack</td><td>Low - the vendor runs the platform so your team runs pipelines</td></tr>
+        <tr><td>Time to first value</td><td>Slower - assembling and hardening the pieces takes months</td><td>Faster - live in weeks, value while you are still hiring</td></tr>
+        <tr><td>Lock-in / exit cost</td><td>Low - open standards, portable, you can leave</td><td>High - proprietary formats and pricing make leaving expensive</td></tr>
+        <tr><td>Talent market</td><td>Widely known open tools - easier and cheaper to hire for</td><td>Platform-specific skills - fewer people, premium salaries</td></tr>
+        <tr><td>Cost shape</td><td>Mostly fixed people cost - flat as data grows</td><td>Mostly variable usage cost - rises with every query and terabyte</td></tr>
+      </tbody>
+    </table>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Total cost over scale: managed platforms are cheaper early because they need no ops team, open-source stacks are cheaper at large scale where usage fees dominate, with a crossover point in between">
+        <style>
+          .a4tcT { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .a4tcX { font: 400 12px Inter, sans-serif; fill: #64748B; }
+          .a4tcW { font: 700 12px Inter, sans-serif; fill: #FFFFFF; }
+          .a4tcN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .a4tcAx { stroke: #CBD5E1; stroke-width: 2; fill: none; }
+        </style>
+        <line class="a4tcAx" x1="80" y1="40" x2="80" y2="220"/>
+        <line class="a4tcAx" x1="80" y1="220" x2="820" y2="220"/>
+        <text class="a4tcX" x="30" y="46">Total</text>
+        <text class="a4tcX" x="30" y="62">cost</text>
+        <text class="a4tcX" x="740" y="245">scale / usage →</text>
+        <path d="M80 185 L820 70" stroke="#0F766E" stroke-width="3.5" fill="none"/>
+        <rect x="150" y="150" width="150" height="24" rx="6" fill="#0F766E"/>
+        <text class="a4tcW" x="164" y="167">Managed platform</text>
+        <path d="M80 120 L820 130" stroke="#14B8A6" stroke-width="3.5" fill="none"/>
+        <rect x="600" y="150" width="176" height="24" rx="6" fill="#14B8A6"/>
+        <text class="a4tcW" x="614" y="167">Open-source stack</text>
+        <circle cx="425" cy="120" r="7" fill="#134E4A"/>
+        <line x1="425" y1="120" x2="425" y2="220" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="4 4"/>
+        <text class="a4tcT" x="392" y="255">crossover</text>
+        <text class="a4tcX" x="150" y="205">cheaper managed</text>
+        <text class="a4tcX" x="560" y="205">cheaper open-source</text>
+        <rect x="30" y="272" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a4tcN" x="54" y="284">Where your crossover sits depends on your team. No team to run OSS? Managed wins far longer than the chart suggests.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the TCO crossover: managed is cheaper early, open-source cheaper at scale - if you have the team</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why the crossover is really about your team<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The crossover point is not a fixed law of physics - it moves with your organisation. The single biggest lever is whether you already have, or can hire and keep, a team capable of running open infrastructure well.</p>
+        <ul>
+          <li><strong>Strong platform team, large data volumes:</strong> the crossover comes early. Usage fees on a managed platform grow with every terabyte, while your OSS people cost stays roughly flat. At scale, open-source wins clearly.</li>
+          <li><strong>No dedicated platform team:</strong> the crossover may never arrive. The "free" software still needs paid humans to run it, and if those humans are firefighting the stack instead of shipping value, managed was cheaper all along.</li>
+          <li><strong>The trap:</strong> counting only the licence line. Leaders adopt open-source to save money, forget to fund the operations, and end up with a fragile stack and a burned-out team - the reliability tax from session 1, self-inflicted.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The startup that went "free" and paid double.</strong> A mid-size firm ripped out its managed warehouse to run open-source and cut the invoice in half - then quietly hired three platform engineers to keep it standing and lost two quarters of roadmap to the migration. The licence line fell; total cost rose. Open-source is only cheaper when the team to run it is a decision you make on purpose, not a cost you discover afterwards.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THE ONE-PLATFORM BET ============ -->
+  <section class="section" id="one-platform">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · convergence over sprawl</span>
+      <h2>The one-platform bet <span class="tag concept" style="background:#FFEDD5;color:#9A3412">6 min live</span></h2>
+    </div>
+    <p class="lede">Whichever door you choose, a second decision follows: converge on one governed platform, or let a tool zoo grow. Teams accumulate tools the way garages accumulate boxes - each one solved a real problem at the time, and together they become impossible to govern. The one-platform bet is the deliberate choice to consolidate.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A tool zoo of many disconnected tools with tangled integrations on the left, versus one converged governed platform with a single control point on the right">
+        <style>
+          .a4opT { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .a4opH { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a4opX { font: 400 12px Inter, sans-serif; fill: #64748B; }
+          .a4opN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .a4opLn { stroke: #CBD5E1; stroke-width: 1.5; fill: none; }
+        </style>
+        <text class="a4opT" x="30" y="34">A tool zoo</text>
+        <rect x="30" y="48" width="360" height="150" rx="14" fill="#ECFDF9" stroke="#99F6E4"/>
+        <line class="a4opLn" x1="90" y1="90" x2="210" y2="120"/>
+        <line class="a4opLn" x1="210" y1="120" x2="330" y2="80"/>
+        <line class="a4opLn" x1="90" y1="90" x2="150" y2="165"/>
+        <line class="a4opLn" x1="150" y1="165" x2="300" y2="160"/>
+        <line class="a4opLn" x1="330" y1="80" x2="300" y2="160"/>
+        <line class="a4opLn" x1="210" y1="120" x2="150" y2="165"/>
+        <circle cx="90" cy="90" r="16" fill="#134E4A"/>
+        <circle cx="210" cy="120" r="16" fill="#0F766E"/>
+        <circle cx="330" cy="80" r="16" fill="#14B8A6"/>
+        <circle cx="150" cy="165" r="16" fill="#0F766E"/>
+        <circle cx="300" cy="160" r="16" fill="#134E4A"/>
+        <text class="a4opX" x="54" y="192">many tools · tangled integrations · nowhere to govern</text>
+        <text class="a4opT" x="470" y="34">One governed platform</text>
+        <rect x="470" y="48" width="360" height="150" rx="14" fill="#0F766E"/>
+        <rect x="600" y="90" width="100" height="46" rx="10" fill="#2DD4BF"/>
+        <text class="a4opT" x="618" y="118">govern here</text>
+        <rect x="510" y="150" width="70" height="26" rx="7" fill="#ECFDF9"/>
+        <rect x="600" y="150" width="70" height="26" rx="7" fill="#ECFDF9"/>
+        <rect x="690" y="150" width="70" height="26" rx="7" fill="#ECFDF9"/>
+        <line class="a4opLn" x1="545" y1="150" x2="650" y2="136" stroke="#CCFBF1"/>
+        <line class="a4opLn" x1="635" y1="150" x2="650" y2="136" stroke="#CCFBF1"/>
+        <line class="a4opLn" x1="725" y1="150" x2="650" y2="136" stroke="#CCFBF1"/>
+        <text class="a4opH" x="494" y="80" font-size="13">one control point · fewer seams · easy onboarding</text>
+        <rect x="30" y="240" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a4opN" x="54" y="252">One place to govern beats ten tools nobody can see across - but do not over-centralise into a single point of failure.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - a sprawling tool zoo versus one converged, governable platform</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The case for one platform - and its risk<span class="mini">3 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Converging on one governed platform - one orchestration shell where pipelines run, quality is checked, and access is controlled - pays off in three ways that compound:</p>
+        <ul>
+          <li><strong>Fewer integrations to maintain.</strong> Every tool-to-tool seam is a place data breaks and someone has to fix. Consolidation removes seams, and removed seams cannot fail.</li>
+          <li><strong>One place to govern.</strong> Access control, lineage, quality gates, and audit are enforceable when there is a single control point. In a tool zoo, governance is a policy nobody can actually see across.</li>
+          <li><strong>Easier onboarding.</strong> A new hire learns one platform, not seven half-documented tools that each live in a different person's head - which is the resilience-to-turnover argument from session 1.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The risk: over-centralising</strong>
+          Convergence has a failure mode of its own. Push everything through one platform and you create a single point of failure, a bottleneck team, and a monoculture that struggles when a domain has a genuinely different need. The goal is one <em>governed</em> platform with room for domains to move - not one rigid platform that forces every team through the same narrow gate. Session 5 picks up exactly this tension when we get to central-team versus data-mesh.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ EXERCISE ============ -->
+  <section class="section" id="exercise-live">
+    <div class="section-kicker">
+      <span class="klabel">Boardroom exercise</span>
+      <h2>Score-the-option <span class="tag demo">★ 12 min · scorecard together</span></h2>
+    </div>
+    <p class="lede">Instead of arguing about the platform, score it. Take your leading option - or all three doors - and rate each against five factors on a simple 1-to-5 scale. The scoring matters less than the conversation it forces: where you disagree is where the real risk lives.</p>
+
+    <div class="steps">
+      <div class="step"><p>Write your candidate options across the top: build-your-own, buy-managed, and blend-with-open-source. Even if you think you know the answer, score all three - the loser sometimes surprises you.</p></div>
+      <div class="step"><p>Score each option 1 to 5 on <strong>control</strong>: how much can we shape the platform to our needs, without waiting on a vendor's roadmap?</p></div>
+      <div class="step"><p>Score each on <strong>speed</strong>: how fast do we get to first real value - weeks, quarters, or a year?</p></div>
+      <div class="step"><p>Score each on <strong>total cost</strong> (not licence cost - people plus ops plus licence), and on <strong>talent</strong>: can we realistically hire and keep the team this option needs?</p></div>
+      <div class="step"><p>Score each on <strong>lock-in</strong>: how expensive would it be to leave in three years? Total the columns, then talk about the factor where the room disagreed most. That disagreement is your real decision.</p></div>
+    </div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The bank that scored its way out of a bad default.</strong> A data leader walked in certain they would build their own platform for "control". The scorecard showed control at 5 but talent at 2 and speed at 1 - they could not staff it and would lose a year. Buy-managed scored lower on control but far higher everywhere it mattered. They bought, shipped in a quarter, and kept the blend door open for later. The scorecard did not make the decision - it made the tradeoff impossible to ignore.</p>
+    </div>
+  </section>
+
+  <!-- ============ QUESTIONS ============ -->
+  <section class="section" id="questions">
+    <div class="section-kicker">
+      <span class="klabel">Take this to work</span>
+      <h2>★ Questions to ask your data team</h2>
+    </div>
+    <div class="callout win">
+      <strong>Five questions that test a platform bet</strong>
+      Ask them before the contract, not after. Listen for the cost lines nobody put on the slide.
+    </div>
+    <ul>
+      <li><strong>"If we go open-source, who runs it - and have we funded that team, or just assumed it?"</strong> The unfunded ops team is the most common way "free" software becomes the most expensive option.</li>
+      <li><strong>"What is our real total cost of ownership - licence plus people plus operations - not just the invoice?"</strong> If the answer is only the subscription number, the analysis is not finished.</li>
+      <li><strong>"How expensive would it be to leave this vendor in three years?"</strong> The exit cost is the true measure of lock-in, and it is cheapest to ask about before you sign.</li>
+      <li><strong>"Are we converging on one governed platform, or quietly growing a tool zoo?"</strong> If every team picks its own tools, nobody can govern or onboard across them.</li>
+      <li><strong>"Where would over-centralising hurt us - which domain genuinely needs to move differently?"</strong> This keeps convergence from hardening into a bottleneck.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This session draws on the platform-strategy literature and the total-cost-of-ownership debates around managed data platforms versus open-source stacks. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Build vs buy vs blend</span><span class="note">Part 1 · the three doors and the tradeoff each makes</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">TCO: open-source vs managed</span><span class="note">Part 2 · the honest cost picture and the crossover point</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The one-platform bet</span><span class="note">Part 3 · convergence, its payoff, and the over-centralising risk</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Central team vs data mesh</span><span class="note">the over-centralising tension is resolved in a5</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Proving the platform ROI</span><span class="note">the business case for the spend lands in a6</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · The main reason an open-source stack can end up more expensive than a managed platform is...</p>
+      <button class="qopt" type="button">A · Open-source software charges hidden licence fees</button>
+      <button class="qopt" type="button">B · Managed platforms are always cheaper at every scale</button>
+      <button class="qopt" type="button">C · The "free" software still needs a paid team to run it, and that people-and-ops cost is left off the licence line</button>
+      <p class="qwhy">Open-source moves cost from the invoice to your payroll. If the team to run it is not funded on purpose, total cost of ownership can exceed managed - especially without scale.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">2 · The TCO "crossover point" between managed and open-source depends most on...</p>
+      <button class="qopt" type="button">A · The colour of the vendor's dashboard</button>
+      <button class="qopt" type="button">B · Whether you have a team strong enough to run open infrastructure, plus your data scale</button>
+      <button class="qopt" type="button">C · The number of features in the contract</button>
+      <p class="qwhy">Managed is usually cheaper early; open-source can win at large scale where usage fees dominate - but only if a capable platform team exists to run it. No team, no crossover.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · The one-platform bet trades a tool zoo for one governed platform. Its main risk is...</p>
+      <button class="qopt" type="button">A · Over-centralising into a single point of failure and a bottleneck team</button>
+      <button class="qopt" type="button">B · Having too few integrations to maintain</button>
+      <button class="qopt" type="button">C · Making onboarding too easy for new hires</button>
+      <p class="qwhy">Convergence gives fewer seams and one place to govern, but pushed too far it creates a rigid bottleneck. The aim is one governed platform with room for domains to move.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 4 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The three doors</b><span>Build (control), buy managed (speed), blend with OSS (balance). Pick two of control-speed-cost; the third gives way.</span></div>
+      <div class="cheat-item"><b>Honest default</b><span>For most orgs early on, buy-managed first. Blend opens later at scale. Build-your-own is rarely the first answer.</span></div>
+      <div class="cheat-item"><b>OSS cost shape</b><span>Low licence, high people + ops, low lock-in, easy hiring, flat cost as data grows.</span></div>
+      <div class="cheat-item"><b>Managed cost shape</b><span>High licence, low ops, high lock-in, premium talent, cost rises with every query and terabyte.</span></div>
+      <div class="cheat-item"><b>TCO crossover</b><span>Managed cheaper early; OSS cheaper at scale - but only with a team to run it. No team = managed wins longer.</span></div>
+      <div class="cheat-item"><b>The "free" trap</b><span>Counting only the licence line. Free software plus an unfunded ops team is the reliability tax, self-inflicted.</span></div>
+      <div class="cheat-item"><b>One-platform bet</b><span>Converge on one governed platform: fewer seams, one place to govern, easy onboarding. Risk: over-centralising.</span></div>
+      <div class="cheat-item"><b>Next session</b><span>a5 asks who owns what - central team vs data mesh, team topologies, and data contracts as human agreements.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 4 of 6 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="a3-maturity-model.html">← Previous: The maturity model</a> &nbsp;·&nbsp; <a href="a5-org-and-culture.html">Next: Who owns what - org design and data contracts →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

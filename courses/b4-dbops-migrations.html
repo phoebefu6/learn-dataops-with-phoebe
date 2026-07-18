@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 4 · DBOps: schema migrations that never break prod - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Builder session 4 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Builder track · Session 4 of 8</div>
+    <h1>DBOps: <span class="accent">schema migrations that never break prod</span></h1>
+    <p class="sub">Your code is versioned. Your pipeline is orchestrated and quality-gated. But the moment RetailPulse writes into a real database, a new thing starts drifting out from under you: the schema. Someone runs an ALTER by hand in prod, forgets to tell anyone, and next week's deploy fails against a column that no longer matches the code. Tonight you bring the database into version control - ordered, versioned migration files, run automatically in CI/CD - and rehearse the expand-contract pattern that lets you rename a column in production without a second of downtime.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: DA · DE · DS · ML</span>
+      <span class="chip audience">Python · Postgres · Alembic (or Flyway) · SQL</span>
+      <span class="chip time">v0.4</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-20 · Why version the DB</span>
+      <span class="a3" style="flex:5">20-42 · Build-along: migrate + rename</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where RetailPulse is tonight</h2>
+    </div>
+    <p class="lede">Recap: RetailPulse v0.3 is an orchestrated, quality-gated pipeline - it cleans sales daily, validates them against a Great Expectations suite, and enforces a data contract in CI. So far the output has been a parquet file. Tonight it graduates to a real Postgres table that dashboards and apps can query. And the instant a database is involved, a new risk appears: the schema is state that lives outside your repo and drifts by hand. DBOps is version control pointed at that schema.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill peach">★ Try it now command</span>
+      <span class="pill inkpill">Open-source stack + AWS notes</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      RetailPulse loading into a versioned Postgres <code>sales</code> table, with an Alembic migration that creates the schema and is checked into Git. Migrations that run automatically in CI/CD before the load. And a rehearsed expand-contract rename - <code>price</code> to <code>unit_price</code> - done in safe, reversible steps with a working downgrade, so a schema change in prod never means downtime or a 2am rollback panic.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: WHY VERSION THE DB ============ -->
+  <section class="section" id="why-version">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the problem of un-versioned schema</span>
+      <h2>Why version the database <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">You would never edit production code by SSH-ing into a server and changing a file by hand. Yet that is exactly how most database schemas evolve: someone runs an ALTER in a prod console, the change lives nowhere in Git, and the code and the database silently disagree until a deploy blows up. Versioned migrations end that.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Application code is versioned in Git while the schema drifts by hand, causing breakage; versioned migrations bring the schema back into Git">
+        <style>
+          .b4vT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b4vI { font: 700 13px Inter, sans-serif; fill: #0F172A; }
+          .b4vL { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .b4vX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b4vN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b4vArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b4vAh); }
+          .b4vBad { stroke: #F87171; stroke-width: 2.5; fill: none; marker-end: url(#b4vBh); }
+        </style>
+        <defs>
+          <marker id="b4vAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+          <marker id="b4vBh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#F87171" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="45" width="200" height="60" rx="12" fill="#134E4A"/>
+        <text class="b4vT" x="54" y="72">App / pipeline code</text>
+        <text class="b4vL" x="54" y="92">versioned in Git ✓</text>
+        <rect x="30" y="150" width="200" height="60" rx="12" fill="#0F766E"/>
+        <text class="b4vT" x="54" y="177">Schema</text>
+        <text class="b4vL" x="54" y="197">changed by hand ✗</text>
+        <rect x="360" y="95" width="190" height="70" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b4vI" x="384" y="125">They drift apart</text>
+        <text class="b4vI" x="384" y="146" font-weight="400" font-size="12">code expects a column</text>
+        <text class="b4vI" x="384" y="163" font-weight="400" font-size="12">the DB no longer has</text>
+        <rect x="670" y="95" width="180" height="70" rx="12" fill="#134E4A"/>
+        <text class="b4vT" x="694" y="125">Deploy breaks</text>
+        <text class="b4vL" x="694" y="146">at the worst time</text>
+        <line class="b4vArr" x1="232" y1="75" x2="358" y2="120"/>
+        <line class="b4vBad" x1="232" y1="180" x2="358" y2="140"/>
+        <line class="b4vArr" x1="552" y1="130" x2="668" y2="130"/>
+        <text class="b4vX" x="360" y="200">Fix: versioned migration files make the schema reproducible from Git - no hand edits, ever.</text>
+        <rect x="30" y="232" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b4vN" x="54" y="244">Un-versioned schema is the last place drift hides. Migrations drag it into the light.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - code in Git, schema by hand, and the breakage waiting to happen</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The problem with un-versioned schema<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>An un-versioned schema fails in ways that are painful precisely because they are invisible until deploy time:</p>
+        <ul>
+          <li><strong>No source of truth:</strong> what does the prod schema actually look like right now? Nobody knows for sure - you have to go query the database and hope dev matches.</li>
+          <li><strong>Dev/prod skew:</strong> someone adds an index in prod to fix a slow query and never replicates it to dev or staging. The environments quietly diverge.</li>
+          <li><strong>No reproducibility:</strong> you cannot stand up a fresh environment from Git, because the schema history is not in Git - it is a sequence of manual ALTERs nobody wrote down.</li>
+          <li><strong>No review, no rollback:</strong> a hand-run ALTER gets no pull request and no CI check, and there is no clean way to undo it.</li>
+        </ul>
+        <p>Versioned migrations fix all four: the schema's entire history becomes a series of ordered files in the repo, reviewed like code, run automatically, and reproducible from scratch. The database stops being the one component that lives outside your DataOps discipline.</p>
+        <div class="prompt-box good"><span class="label">★ Try it now (your terminal)</span>docker run --name rp-pg -e POSTGRES_PASSWORD=dev \
+  -e POSTGRES_DB=retailpulse -p 5432:5432 -d postgres:16
+pip install "alembic" "sqlalchemy" "psycopg2-binary"
+alembic init migrations   # creates the migrations/ folder + config</div>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The column that existed in prod but not in Git.</strong> An analytics team had a reporting column that a DBA had added directly in production months earlier. When they finally automated their deploys, every fresh environment was missing that column and half the dashboards broke - and no one could explain where the column had come from. The schema had a secret history that lived only in one database. Versioned migrations would have made that column a reviewed file with a name and a date, not a mystery.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>DBOps is just DataOps for the schema<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Everything you have built this track applies to the schema too. Migrations go in Git (b1's version-everything rule). They run in CI/CD (b1's automated gate, b2's orchestration). They can be tested and rolled back. DBOps is not a new discipline - it is the same four DevOps moves from session b1, finally pointed at the one component teams most often leave out: the database. If it feels familiar, that is the point. The schema is code now.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: MIGRATION TOOLS ============ -->
+  <section class="section" id="tools">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the migration tool landscape</span>
+      <h2>Migration tools <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Three tools dominate schema migrations. They differ in how you author the change - raw SQL, Python, or multi-format - but they all deliver the same core promise: ordered, versioned, forward-only files, checked into Git, run in CI/CD.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Flyway, Alembic, Liquibase - and what they share<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The three you will meet:</p>
+        <table class="clean">
+          <thead><tr><th>Tool</th><th>You author changes as</th><th>Best when</th></tr></thead>
+          <tbody>
+            <tr><td>Flyway</td><td>SQL-first, versioned <code>V1__*.sql</code> files</td><td>Your team thinks in SQL and wants zero magic - the file is the change</td></tr>
+            <tr><td>Alembic</td><td>Python, via SQLAlchemy; can autogenerate</td><td>Python shops (RetailPulse) - it can diff your models and draft the migration</td></tr>
+            <tr><td>Liquibase</td><td>SQL, XML, YAML, or JSON changesets</td><td>Multi-language teams, complex enterprise rollout, DB-agnostic changelogs</td></tr>
+          </tbody>
+        </table>
+        <p>We use <strong>Alembic</strong> tonight because RetailPulse is a Python project and Alembic can autogenerate a first draft of a migration by comparing your SQLAlchemy models to the live database - then you review and edit it, never trusting it blindly. Whatever you pick, the discipline underneath is identical:</p>
+        <ul>
+          <li><strong>Ordered:</strong> every migration has a version and a parent, so they apply in a strict sequence. The database tracks which version it is at.</li>
+          <li><strong>Versioned in Git:</strong> each migration is a file, reviewed in a pull request like any code.</li>
+          <li><strong>Forward-only in spirit:</strong> in prod you roll forward. Downgrades exist for dev and emergencies, but you design changes so you rarely need them.</li>
+          <li><strong>Run in CI/CD:</strong> migrations apply automatically as a deploy step, before the code that needs the new schema - never by hand in a console.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>Autogenerate, then read every line</strong>
+          Alembic's <code>--autogenerate</code> is a fantastic first draft, not a final answer. It can miss column renames (it sees a drop + an add) and server defaults. Always open the generated file and confirm it does what you meant before committing. A migration is code; review it like code.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>How a migration tool tracks state<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Every migration tool keeps a small bookkeeping table in the database itself - Alembic calls it <code>alembic_version</code>, Flyway uses <code>flyway_schema_history</code>. It records which migrations have been applied. When you run <code>upgrade</code>, the tool compares that table to the migration files on disk and applies only the ones that are missing, in order. That is the whole trick: the database knows what version it is at, the files describe every version, and the tool reconciles them. It is exactly how <code>git</code> knows which commits you are missing - version control for schema, with the same mental model.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: EXPAND-CONTRACT ============ -->
+  <section class="section" id="expand-contract">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers zero-downtime schema change + rollback</span>
+      <h2>Expand-contract and rollback <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">Here is the migration that scares people: renaming or dropping a column in a live database that running code depends on. A big-bang <code>ALTER ... RENAME</code> breaks every query still using the old name the instant it runs. The expand-contract pattern turns that cliff into a safe staircase.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The expand-contract pattern in four steps: add the new column, backfill it, switch reads to it, then drop the old column">
+        <style>
+          .b4eT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b4eI { font: 700 13px Inter, sans-serif; fill: #0F172A; }
+          .b4eL { font: 400 11.5px Inter, sans-serif; fill: #CCFBF1; }
+          .b4eX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b4eN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b4eArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b4eAh); }
+        </style>
+        <defs>
+          <marker id="b4eAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="20" y="60" width="185" height="80" rx="12" fill="#134E4A"/>
+        <text class="b4eT" x="40" y="88">1 · Expand</text>
+        <text class="b4eL" x="40" y="108">add unit_price column</text>
+        <text class="b4eL" x="40" y="126">both columns exist</text>
+        <rect x="235" y="60" width="185" height="80" rx="12" fill="#0F766E"/>
+        <text class="b4eT" x="255" y="88">2 · Backfill</text>
+        <text class="b4eL" x="255" y="108">copy price -&gt; unit_price</text>
+        <text class="b4eL" x="255" y="126">dual-write new rows</text>
+        <rect x="450" y="60" width="185" height="80" rx="12" fill="#14B8A6"/>
+        <text class="b4eT" x="470" y="88">3 · Switch reads</text>
+        <text class="b4eL" x="470" y="108">code reads unit_price</text>
+        <text class="b4eL" x="470" y="126">deploy, verify</text>
+        <rect x="665" y="60" width="185" height="80" rx="12" fill="#2DD4BF"/>
+        <text class="b4eI" x="685" y="88">4 · Contract</text>
+        <text class="b4eI" x="685" y="108" font-weight="400" font-size="11.5">drop price column</text>
+        <text class="b4eI" x="685" y="126" font-weight="400" font-size="11.5">rename complete</text>
+        <line class="b4eArr" x1="207" y1="100" x2="233" y2="100"/>
+        <line class="b4eArr" x1="422" y1="100" x2="448" y2="100"/>
+        <line class="b4eArr" x1="637" y1="100" x2="663" y2="100"/>
+        <text class="b4eX" x="20" y="185">Each step is its own migration and its own deploy. At no point is the database in a state that breaks running code.</text>
+        <rect x="20" y="222" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b4eN" x="44" y="234">Never big-bang a rename. Expand, backfill, switch, contract - each step safe and reversible.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - expand-contract: a rename in four safe, reversible steps</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why big-bang ALTERs break prod, and how rollback works<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The reason a naive rename is dangerous: in a real deploy the code and the schema do not change at the same instant. For a window of seconds to minutes, old code runs against the new schema or vice versa. A single <code>ALTER TABLE sales RENAME price TO unit_price</code> means every query still asking for <code>price</code> - including the app version currently serving traffic - errors immediately. Expand-contract removes that window by never having the old and new worlds be mutually exclusive:</p>
+        <ul>
+          <li><strong>Expand:</strong> add <code>unit_price</code> alongside <code>price</code>. Old code still works - its column is untouched.</li>
+          <li><strong>Backfill:</strong> copy existing values across and dual-write both columns for new rows, so the two stay in sync.</li>
+          <li><strong>Switch reads:</strong> deploy code that reads <code>unit_price</code>. Now nothing depends on <code>price</code>.</li>
+          <li><strong>Contract:</strong> once you are sure nothing reads the old column, drop it. The rename is complete, and no request ever hit a broken schema.</li>
+        </ul>
+        <p><strong>Rollback</strong> is the mirror image. Every Alembic migration has an <code>upgrade()</code> and a <code>downgrade()</code>. If a step goes wrong, <code>alembic downgrade -1</code> reverses exactly that step. Because each expand-contract step is small and reversible, rollback is a one-liner, not an incident - the opposite of unwinding a big-bang ALTER by hand at 2am.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The rollback that a destructive migration cannot give you<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A subtlety worth internalizing: some migrations are not truly reversible, no matter how good your tool is. If a migration <em>drops</em> a column and you have not backed the data up, its <code>downgrade()</code> can recreate the empty column but not the values - they are gone. This is exactly why expand-contract defers the destructive step (the drop) to the very end, after you are certain nothing needs it. The lesson: design migrations so the irreversible part happens last and alone, and never in the same deploy as the change that depends on it. Safe schema change is less about the tool and more about the order.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Load RetailPulse to Postgres plus a first migration <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">Give RetailPulse a real database. You will define the <code>sales</code> table as an Alembic migration, apply it to Postgres, and change the load step so the cleaned data lands in the table instead of only a parquet file. The schema is now a versioned file in the repo.</p>
+
+    <div class="steps">
+      <div class="step"><p>Start Postgres and <code>alembic init migrations</code> from the Try-it command above. Point <code>sqlalchemy.url</code> at your database (via env var, not hardcoded - the b3 config lesson holds).</p></div>
+      <div class="step"><p>Create the first migration with <code>alembic revision -m "create sales table"</code>. Fill in <code>upgrade()</code> and <code>downgrade()</code> from Prompt A: the seven RetailPulse columns with types and a primary key.</p></div>
+      <div class="step"><p>Apply it with <code>alembic upgrade head</code>. Confirm the table exists (<code>\d sales</code> in psql) and that <code>alembic_version</code> now records the revision.</p></div>
+      <div class="step"><p>Update the load task to write the cleaned DataFrame into the <code>sales</code> table (<code>df.to_sql("sales", engine, if_exists="append")</code> or an upsert). The parquet can stay as a staging artifact.</p></div>
+      <div class="step"><p>Commit the migration file. Your schema history now lives in Git next to the pipeline that fills it.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt A - migrations/versions/0001_create_sales.py (Alembic)</span>"""create sales table"""
+from alembic import op
+import sqlalchemy as sa
+
+revision = "0001_create_sales"
+down_revision = None
+
+def upgrade() -&gt; None:
+    op.create_table(
+        "sales",
+        sa.Column("order_id",    sa.String,  primary_key=True),
+        sa.Column("order_date",  sa.Date,    nullable=False),
+        sa.Column("product",     sa.String,  nullable=False),
+        sa.Column("quantity",    sa.Integer, nullable=False),
+        sa.Column("price",       sa.Numeric(10, 2), nullable=False),
+        sa.Column("customer_id", sa.String,  nullable=False),
+        sa.Column("region",      sa.String,  nullable=False),
+    )
+
+def downgrade() -&gt; None:
+    op.drop_table("sales")</div>
+
+    <div class="callout tip">
+      <strong>Data tip</strong>
+      Load only synthetic or public retail data into your teaching Postgres. And keep the DB password in an env var or secret - never in the migration, the connection string in Git, or a screenshot. The b1 "never commit data or secrets" rule extends to database credentials.
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Migrations in CI/CD plus a safe rename <span class="tag demo">★ 10 min · build your own</span></h2>
+    </div>
+    <p class="lede">A migration that only runs when you remember it is drift waiting to happen. Now you make migrations run automatically before the load, then rehearse the real thing: renaming <code>price</code> to <code>unit_price</code> with expand-contract, and reversing a step with a downgrade.</p>
+
+    <div class="steps">
+      <div class="step"><p>Add <code>alembic upgrade head</code> as a step in <code>ci.yml</code> and as the first task in the Airflow DAG, before load. Now schema and code always deploy together, in the right order (Prompt B).</p></div>
+      <div class="step"><p>Expand: create migration <code>0002</code> that adds a nullable <code>unit_price</code> column. Apply it. Old code that reads <code>price</code> keeps working untouched.</p></div>
+      <div class="step"><p>Backfill: in the same or a follow-up migration, copy <code>price</code> into <code>unit_price</code> (Prompt C), and update the load to write both columns for new rows.</p></div>
+      <div class="step"><p>Switch reads: point the pipeline and any queries at <code>unit_price</code>, deploy, and verify nothing references <code>price</code> anymore.</p></div>
+      <div class="step"><p>Contract + rollback drill: create the migration that drops <code>price</code>, then practice reversing a step with <code>alembic downgrade -1</code>. RetailPulse is now v0.4: schema in version control, migrated in CI/CD, renamed with zero downtime.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt B - migrate before load, in CI and the DAG</span># ci.yml - run migrations as a deploy step, before anything uses the schema
+- name: Run DB migrations
+  run: alembic upgrade head
+  env:
+    SQLALCHEMY_URL: ${{ secrets.RETAILPULSE_DB_URL }}
+
+# Airflow - make migrate the first task so schema is ready before load
+@task
+def migrate() -&gt; None:
+    import subprocess
+    subprocess.run(["alembic", "upgrade", "head"], check=True)
+
+# wiring: load(validate(transform(extract())))  after  migrate() runs first
+migrate() &gt;&gt; extract()</div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt C - expand-contract rename price -&gt; unit_price</span># 0002_add_unit_price.py  (EXPAND - safe, additive)
+def upgrade():
+    op.add_column("sales",
+        sa.Column("unit_price", sa.Numeric(10, 2), nullable=True))
+    # BACKFILL existing rows
+    op.execute("UPDATE sales SET unit_price = price WHERE unit_price IS NULL")
+
+def downgrade():
+    op.drop_column("sales", "unit_price")
+
+# ... deploy code that WRITES both, then READS unit_price, verify ...
+
+# 0003_drop_price.py  (CONTRACT - destructive, runs last and alone)
+def upgrade():
+    op.drop_column("sales", "price")      # nothing reads it now
+
+def downgrade():
+    # recreate the column shape; values are gone - that is why drop goes last
+    op.add_column("sales",
+        sa.Column("price", sa.Numeric(10, 2), nullable=True))
+    op.execute("UPDATE sales SET price = unit_price")</div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The rename that took a checkout down - and the one that did not.</strong> One team renamed a column with a single ALTER during a deploy; the still-running app version queried the old name and the checkout page threw 500s for eleven minutes until they rolled back by hand. A second team did the identical rename with expand-contract across three small migrations over two days - add, backfill, switch, drop - and not one request ever failed. Same change, same database. The only difference was the order, and it was the difference between an incident report and a boring Tuesday.</p>
+    </div>
+    <div class="callout tip">
+      <strong>☁️ AWS mapping</strong>
+      The database itself maps to <strong>Amazon RDS</strong> or <strong>Aurora</strong> (managed Postgres). You run the same Alembic or Flyway migrations as a CI/CD step or a short-lived <strong>ECS task</strong> that executes before the app deploys - identical to what you built tonight. For bulk moves between databases, <strong>AWS DMS</strong> (Database Migration Service) handles the data transfer. The discipline - ordered, versioned, CI-run migrations - does not change; only who hosts the database does.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 45-60 min total</span></h2>
+    </div>
+    <ul>
+      <li>Finish both demos if you did not live - especially the full expand-contract rename and at least one <code>alembic downgrade -1</code>. Everyone should reverse a migration once.</li>
+      <li>Add an index migration: create a migration that indexes <code>order_date</code>, apply it, then downgrade it. Watch the <code>alembic_version</code> table move.</li>
+      <li>Break it on purpose: write a migration that drops a column with no backfill, downgrade it, and confirm the values do not come back. Feel why the destructive step goes last.</li>
+      <li>Try <code>alembic revision --autogenerate</code> against a changed SQLAlchemy model, then read every line of what it produced before trusting it.</li>
+      <li>Optional reading: the Alembic tutorial and Flyway's "Why database migrations" page - now a review of what you already built.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This track teaches DataOps on an open-source stack from the tools' official docs, with AWS mapping notes. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Why version the database schema</span><span class="note">Part 1 · drift, dev/prod skew, reproducibility, rollback</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Alembic migrations + running them in CI/CD</span><span class="note">Part 2 + both demos · ordered, versioned, forward-only files</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Expand-contract + rollback</span><span class="note">Part 3 + Demo 2 · zero-downtime rename, downgrade drill</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Flyway / Liquibase</span><span class="note">Part 2 · comparison table, when each fits</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Amazon RDS/Aurora + DMS mapping</span><span class="note">Demo 2 sidebar · concept parity, not a full AWS tutorial</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Why is an un-versioned schema a DataOps problem?</p>
+      <button class="qopt" type="button">A · Databases are slower than parquet files</button>
+      <button class="qopt" type="button">B · SQL cannot be stored in Git</button>
+      <button class="qopt" type="button">C · Hand-run ALTERs live nowhere in Git, so the schema drifts from the code, environments skew, and you cannot reproduce or review changes</button>
+      <p class="qwhy">The schema is state outside your repo. Without versioned migrations it changes by hand with no source of truth, no review, no rollback, and no way to stand up a fresh environment from Git.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · What do Flyway, Alembic, and Liquibase all share, despite different authoring formats?</p>
+      <button class="qopt" type="button">A · Ordered, versioned migration files, checked into Git and run in CI/CD, with the database tracking which version it is at</button>
+      <button class="qopt" type="button">B · They all require Python</button>
+      <button class="qopt" type="button">C · They all automatically fix bad data</button>
+      <p class="qwhy">SQL-first, Python, or multi-format - the authoring differs, but the discipline is identical: ordered versioned files in Git, applied in sequence by a tool that records the current version in the database.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · Why rename a column with expand-contract instead of a single ALTER?</p>
+      <button class="qopt" type="button">A · A single ALTER is not valid SQL</button>
+      <button class="qopt" type="button">B · During a deploy old and new code briefly coexist; expand-contract (add, backfill, switch reads, drop last) means the schema is never in a state that breaks running code, and each step is reversible</button>
+      <button class="qopt" type="button">C · Expand-contract is faster to type</button>
+      <p class="qwhy">A big-bang rename breaks every query still using the old name the instant it runs. Expand-contract keeps both worlds valid at once and defers the destructive drop to the very end, so there is no downtime and rollback stays a one-liner.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 4 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>DBOps in one line</b><span>Version control for the database schema - the same DataOps moves pointed at the one component teams leave out.</span></div>
+      <div class="cheat-item"><b>Un-versioned schema drifts</b><span>Hand-run ALTERs = no source of truth, dev/prod skew, no reproducibility, no review or rollback.</span></div>
+      <div class="cheat-item"><b>The three tools</b><span>Flyway (SQL files), Alembic (Python/SQLAlchemy, autogenerate), Liquibase (multi-format). Same discipline underneath.</span></div>
+      <div class="cheat-item"><b>Migrations are</b><span>Ordered, versioned, forward-only files in Git, reviewed in a PR, run automatically in CI/CD before the code needs them.</span></div>
+      <div class="cheat-item"><b>Migrate before load</b><span>alembic upgrade head as a CI step and the first DAG task - schema ready before anything writes to it.</span></div>
+      <div class="cheat-item"><b>Expand-contract</b><span>Add new column -> backfill -> switch reads -> drop old (last, alone). Zero-downtime rename; each step reversible.</span></div>
+      <div class="cheat-item"><b>AWS mapping</b><span>RDS/Aurora for the DB; migrations as a CI/CD step or ECS task; DMS for data migration. Same discipline.</span></div>
+      <div class="cheat-item"><b>Running project</b><span>RetailPulse v0.4: schema versioned + migrated in CI/CD, renamed safely. Next: b5 experiment tracking.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 4 of 8 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="b3-data-testing-contracts.html">← Data testing and contracts</a> &nbsp;·&nbsp; <a href="b5-experiment-tracking.html">Next: MLOps I - experiment tracking and the registry →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

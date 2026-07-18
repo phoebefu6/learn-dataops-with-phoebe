@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 1 · Why DataOps? From artisanal to industrialized data - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Leader session 1 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Leader track · Session 1 of 6</div>
+    <h1>Why DataOps? <span class="accent">From artisanal to industrialized data</span></h1>
+    <p class="sub">Your data team is probably brilliant and quietly exhausted - shipping insight by heroics, patching pipelines at midnight, and never quite trusting the number on the dashboard. DataOps is the answer software teams found twenty years ago, pointed at data. This session, no code: what fragile data really costs, what industrializing it means, and the three ideas DataOps braids together. You leave with questions to ask your team on Monday.</p>
+    <div class="chip-row">
+      <span class="chip level">🤝 Leader track</span>
+      <span class="chip audience">C-level · managers · data leads</span>
+      <span class="chip audience">No code, ever</span>
+      <span class="chip time">Start here</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:5">3-30 · The three ideas</span>
+      <span class="a3" style="flex:4">30-42 · Boardroom exercise</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>How this track works</h2>
+    </div>
+    <p class="lede">Six sessions, no code, ever. This track teaches you to think about, question, and fund DataOps - not to build it. Each session pairs a plain-English concept with a short boardroom exercise and ends with the exact questions to put to your data team. The builder track (b1-b8) grows a real data product called RetailPulse in parallel; you never have to open it, but knowing it exists tells you what your engineers are actually doing when they say "we added a quality gate".</p>
+    <div class="legend">
+      <span class="pill solid">Live - discussed in session</span>
+      <span class="pill light">Self-study - read after</span>
+      <span class="pill peach">★ Questions for your team</span>
+      <span class="pill inkpill">Strategy, not tooling</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A clear, jargon-free definition of DataOps you can repeat to a board, a way to name and roughly size the "reliability tax" your org already pays, the three lineages that explain why DataOps is proven rather than trendy, and five questions that will tell you in ten minutes how mature your data team really is.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE RELIABILITY TAX ============ -->
+  <section class="section" id="reliability-tax">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the cost of fragile data</span>
+      <h2>The reliability tax you are already paying <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Nobody has a line item called "fragile data". But the cost is real and it is large - it just hides inside salaries, delays, and decisions made on numbers that turned out to be wrong. Name it and you can manage it.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The reliability tax has four hidden components: rework, delay, distrust, and risk, all flowing into a single hidden cost">
+        <style>
+          .a1tT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a1tX { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .a1tI { font: 700 15px Inter, sans-serif; fill: #0F172A; }
+          .a1tM { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .a1tN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .a1tArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#a1tAh); }
+        </style>
+        <defs>
+          <marker id="a1tAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="40" width="175" height="58" rx="12" fill="#134E4A"/>
+        <text class="a1tT" x="52" y="66">Rework</text>
+        <text class="a1tX" x="52" y="86">re-running broken jobs</text>
+        <rect x="30" y="112" width="175" height="58" rx="12" fill="#0F766E"/>
+        <text class="a1tT" x="52" y="138">Delay</text>
+        <text class="a1tX" x="52" y="158">insight arrives late</text>
+        <rect x="30" y="184" width="175" height="58" rx="12" fill="#14B8A6"/>
+        <text class="a1tT" x="52" y="210">Distrust</text>
+        <text class="a1tX" x="52" y="230">"is this number right?"</text>
+        <rect x="255" y="112" width="175" height="58" rx="12" fill="#2DD4BF"/>
+        <text class="a1tI" x="277" y="138">Risk</text>
+        <text class="a1tM" x="277" y="158" fill="#134E4A">a wrong decision, shipped</text>
+        <rect x="520" y="96" width="200" height="90" rx="14" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a1tI" x="546" y="130">The reliability tax</text>
+        <text class="a1tM" x="546" y="152">paid in salaries, delay,</text>
+        <text class="a1tM" x="546" y="170">and bad decisions</text>
+        <line class="a1tArr" x1="207" y1="69" x2="516" y2="120"/>
+        <line class="a1tArr" x1="432" y1="141" x2="516" y2="141"/>
+        <line class="a1tArr" x1="207" y1="141" x2="253" y2="141"/>
+        <line class="a1tArr" x1="207" y1="213" x2="516" y2="162"/>
+        <rect x="30" y="248" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a1tN" x="52" y="260">You cannot cut a cost you have never named. Part 1's job is to give it a name your board recognizes.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the four hidden components of the reliability tax</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Four places the money leaks<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Fragile data does not send an invoice. It leaks value in four places every leader will recognize once they are pointed out:</p>
+        <ul>
+          <li><strong>Rework:</strong> your most expensive people spend their week re-running failed jobs and reconciling numbers by hand instead of doing analysis. This is the tax you can measure fastest - just ask how many hours a week go to "firefighting".</li>
+          <li><strong>Delay:</strong> when every release is manual and risky, teams batch changes and ship rarely. The insight that could have moved a decision arrives two weeks late, after the decision was already made on a guess.</li>
+          <li><strong>Distrust:</strong> the moment a leader has been burned by a wrong dashboard, they stop trusting all dashboards - and go back to gut feel. That quietly destroys the entire return on your data investment.</li>
+          <li><strong>Risk:</strong> the worst case is not a broken pipeline you notice. It is a silently wrong number that nobody catches, driving a pricing, hiring, or compliance decision. Fragile data turns into a business incident.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>Unity's $110M lesson.</strong> In 2022 the games company Unity told investors that bad data ingested into its ad-targeting model would cost it around $110 million and a chunk of its guidance. The model was fine. The data feeding it was not. No amount of data-science talent protects you from an un-industrialized pipeline - which is precisely the gap DataOps closes.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>A back-of-envelope tax estimate<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>You do not need a consulting study. A rough number you can defend:</p>
+        <table class="clean">
+          <thead><tr><th>Input</th><th>Ask</th></tr></thead>
+          <tbody>
+            <tr><td>Firefighting hours</td><td>Hours/week your data team spends on breakage x loaded hourly cost x 52</td></tr>
+            <tr><td>Decision delay</td><td>How often does a decision wait on data? What did the wait cost, once?</td></tr>
+            <tr><td>One bad number</td><td>Recall the last wrong figure that reached a leader. What did acting on it cost?</td></tr>
+          </tbody>
+        </table>
+        <p>Add them up. The total is almost always larger than the cost of the automation that would have prevented it - which is the entire ROI argument of the leader track, previewed here and proven in a6.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: ARTISANAL TO INDUSTRIALIZED ============ -->
+  <section class="section" id="industrialize">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · the shift DataOps makes</span>
+      <h2>From artisanal to industrialized <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Most data work today is artisanal: skilled people, crafting each output by hand, remembering the steps, catching errors by eye. It is not a talent problem - it is a systems problem. DataOps is the move from craft to assembly line, and it is the same move manufacturing and software already made.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Artisanal data on the left relies on humans to remember and check steps; industrialized data on the right has automated gates and repeatable runs">
+        <style>
+          .a1iT { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .a1iH { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .a1iX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .a1iN { font: 600 14px Inter, sans-serif; fill: #431407; }
+        </style>
+        <rect x="30" y="40" width="380" height="176" rx="14" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a1iT" x="54" y="68">Artisanal data</text>
+        <text class="a1iX" x="54" y="96">· steps live in one person's head</text>
+        <text class="a1iX" x="54" y="120">· errors caught by eye, if at all</text>
+        <text class="a1iX" x="54" y="144">· releases are manual and scary</text>
+        <text class="a1iX" x="54" y="168">· fixes are heroics at midnight</text>
+        <text class="a1iX" x="54" y="192">· knowledge leaves when people do</text>
+        <rect x="470" y="40" width="380" height="176" rx="14" fill="#0F766E"/>
+        <text class="a1iH" x="494" y="68" font-size="14">Industrialized data (DataOps)</text>
+        <text class="a1iH" x="494" y="96" font-weight="400" fill="#CCFBF1">· steps are code, in version control</text>
+        <text class="a1iH" x="494" y="120" font-weight="400" fill="#CCFBF1">· errors caught by automated gates</text>
+        <text class="a1iH" x="494" y="144" font-weight="400" fill="#CCFBF1">· releases are one repeatable path</text>
+        <text class="a1iH" x="494" y="168" font-weight="400" fill="#CCFBF1">· fixes are reviewed and reverted</text>
+        <text class="a1iH" x="494" y="192" font-weight="400" fill="#CCFBF1">· knowledge lives in the system</text>
+        <path d="M414 128 L466 128" stroke="#F59E0B" stroke-width="3" fill="none" marker-end="url(#a1iAh)"/>
+        <defs>
+          <marker id="a1iAh" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#F59E0B" stroke-width="1.6"/>
+          </marker>
+        </defs>
+        <rect x="30" y="234" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a1iN" x="54" y="246">The goal is not to replace your artisans. It is to give them an assembly line so their craft scales and survives.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the same team, before and after industrializing the data flow</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What "industrialized" buys you<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Industrializing is not about working faster by hand. It is about removing the hands from the repeatable parts so people do only the parts that need judgment. Concretely, DataOps buys four things:</p>
+        <ul>
+          <li><strong>Speed with safety:</strong> changes ship in hours, not weeks, because automated checks make each change low-risk. You stop trading speed against safety - you get both.</li>
+          <li><strong>Trust by construction:</strong> data is tested the way code is tested. When the dashboard says a number, a machine already checked that the number is plausible. Trust stops being a matter of faith.</li>
+          <li><strong>Resilience to turnover:</strong> the process lives in the repository, not in the senior engineer's memory. When they take a holiday - or a new job - the pipeline still runs.</li>
+          <li><strong>Compounding leverage:</strong> every automated gate keeps paying off on every future change. It is infrastructure, and like all infrastructure the return grows over time.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THE THREE LINEAGES ============ -->
+  <section class="section" id="lineages">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · why DataOps is proven, not trendy</span>
+      <h2>The three lineages DataOps braids together <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">DataOps can sound like another vendor buzzword. It is not. It is the deliberate combination of three well-tested disciplines, each with decades of evidence behind it. Knowing the lineages is how you answer the skeptic in the room who has "seen it all before".</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three streams - DevOps, Agile, and lean manufacturing - merge into DataOps">
+        <style>
+          .a1lT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a1lX { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .a1lI { font: 700 15px Inter, sans-serif; fill: #0F172A; }
+          .a1lM { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .a1lN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .a1lArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#a1lAh); }
+        </style>
+        <defs>
+          <marker id="a1lAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="30" width="230" height="56" rx="12" fill="#134E4A"/>
+        <text class="a1lT" x="52" y="54">DevOps</text>
+        <text class="a1lX" x="52" y="74">automate the delivery pipeline</text>
+        <rect x="30" y="97" width="230" height="56" rx="12" fill="#0F766E"/>
+        <text class="a1lT" x="52" y="121">Agile</text>
+        <text class="a1lX" x="52" y="141">ship small, iterate with users</text>
+        <rect x="30" y="164" width="230" height="56" rx="12" fill="#14B8A6"/>
+        <text class="a1lT" x="52" y="188">Lean manufacturing</text>
+        <text class="a1lX" x="52" y="208">cut waste, build in quality</text>
+        <rect x="560" y="90" width="290" height="70" rx="14" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="a1lI" x="584" y="122">DataOps</text>
+        <text class="a1lM" x="584" y="144">the three, applied to data + ML</text>
+        <line class="a1lArr" x1="262" y1="58" x2="556" y2="112"/>
+        <line class="a1lArr" x1="262" y1="125" x2="556" y2="125"/>
+        <line class="a1lArr" x1="262" y1="192" x2="556" y2="138"/>
+        <rect x="30" y="230" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="a1lN" x="52" y="242">Nothing here is unproven. DataOps is the assembly of three disciplines that already reshaped their industries.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - three proven disciplines converge into DataOps</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What each lineage contributes<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Lineage</th><th>The idea</th><th>What DataOps takes from it</th></tr></thead>
+          <tbody>
+            <tr><td>DevOps</td><td>Automate build, test, and release so software ships continuously and safely</td><td>Version control, CI/CD, and automated gates - now for data and models</td></tr>
+            <tr><td>Agile</td><td>Deliver small increments, get feedback, adjust</td><td>Short cycles and close work with the people who use the data</td></tr>
+            <tr><td>Lean manufacturing</td><td>Remove waste, and build quality into the line instead of inspecting it in at the end</td><td>Quality checks embedded in the pipeline; a relentless focus on cutting rework</td></tr>
+          </tbody>
+        </table>
+        <div class="callout tip">
+          <strong>The one-sentence definition to memorize</strong>
+          DataOps is the practice of applying DevOps automation, Agile delivery, and lean quality to the whole data and machine-learning lifecycle - so data changes ship fast, safely, and with trust built in.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ EXERCISE ============ -->
+  <section class="section" id="exercise-live">
+    <div class="section-kicker">
+      <span class="klabel">Boardroom exercise</span>
+      <h2>Spot your reliability tax <span class="tag demo">★ 10 min · everyone reflects</span></h2>
+    </div>
+    <p class="lede">No spreadsheet needed - just honest recall. Work through these four prompts about your own organization. The goal is not a precise number; it is to make an invisible cost visible enough to act on.</p>
+
+    <div class="steps">
+      <div class="step"><p>Name the last time a dashboard or report was wrong and a leader noticed. What happened next - and how long did trust take to recover?</p></div>
+      <div class="step"><p>Estimate the hours your data team spent last week on breakage and reconciliation rather than analysis. Multiply by their loaded cost. That is your weekly firefighting tax.</p></div>
+      <div class="step"><p>Recall one decision that waited on data. Did it wait days or weeks? What did the delay cost, even roughly?</p></div>
+      <div class="step"><p>Ask: if your most senior data engineer took a month off, what would break? Every honest answer is a piece of process living in a person instead of the system.</p></div>
+    </div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The CFO who found the number.</strong> One data leader ran exactly this exercise with their CFO and discovered the team was spending roughly 40% of its time firefighting. That single, credible percentage unlocked the budget for DataOps automation faster than any architecture diagram had. Name the tax, and the investment case makes itself.</p>
+    </div>
+  </section>
+
+  <!-- ============ QUESTIONS ============ -->
+  <section class="section" id="questions">
+    <div class="section-kicker">
+      <span class="klabel">Take this to work</span>
+      <h2>★ Questions to ask your data team on Monday</h2>
+    </div>
+    <div class="callout win">
+      <strong>Five questions that reveal your real maturity</strong>
+      Ask them plainly and listen for hesitation - hesitation is the answer.
+    </div>
+    <ul>
+      <li><strong>"If a bad number reached a dashboard today, how would we find out - and how long would it take?"</strong> If the answer is "a user would complain", you have no automated quality gates yet.</li>
+      <li><strong>"How much of last week went to firefighting versus new work?"</strong> This sizes the reliability tax in one number.</li>
+      <li><strong>"Is every pipeline in version control, or do some live in notebooks and someone's laptop?"</strong> Anything not in version control cannot be trusted, reviewed, or reverted.</li>
+      <li><strong>"How do we release a change to a pipeline - one automated path, or manual steps someone remembers?"</strong> Manual release is where most data incidents are born.</li>
+      <li><strong>"If our most senior engineer left tomorrow, what breaks?"</strong> The honest list is your process-lives-in-people risk.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This leader track teaches DataOps as a strategy and operating model, drawn from the established DataOps and DevOps literature. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The cost of poor data quality</span><span class="note">Part 1 · the reliability tax, framed for a budget holder</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The DataOps definition + goals</span><span class="note">Part 2-3 · industrialization and the one-sentence definition</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">DevOps, Agile, and lean origins</span><span class="note">Part 3 · the three lineages and what each contributes</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">The maturity model</span><span class="note">previewed in the Monday questions; full model in a3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">ROI of DataOps</span><span class="note">previewed via the tax estimate; the full business case is a6</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · The "reliability tax" is best described as...</p>
+      <button class="qopt" type="button">A · A fee charged by cloud data vendors</button>
+      <button class="qopt" type="button">B · The hidden cost of fragile data - rework, delay, distrust, and risk - that never appears as a line item</button>
+      <button class="qopt" type="button">C · The price of hiring more data scientists</button>
+      <p class="qwhy">It is the value that leaks through firefighting, late decisions, lost trust, and wrong-number incidents. Naming it is the first step to funding the fix.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · "Industrializing" data work primarily means...</p>
+      <button class="qopt" type="button">A · Replacing the data team with software</button>
+      <button class="qopt" type="button">B · Buying a bigger data warehouse</button>
+      <button class="qopt" type="button">C · Moving the repeatable steps into automated, version-controlled systems so people do only the judgment work</button>
+      <p class="qwhy">It is craft-to-assembly-line: automate the repeatable and error-prone parts, freeing skilled people for analysis - and making the process survive turnover.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · Which three lineages does DataOps braid together?</p>
+      <button class="qopt" type="button">A · DevOps automation, Agile delivery, and lean manufacturing quality</button>
+      <button class="qopt" type="button">B · Machine learning, blockchain, and cloud</button>
+      <button class="qopt" type="button">C · Statistics, project management, and design thinking</button>
+      <p class="qwhy">Each is a proven discipline. DataOps is their deliberate combination applied to the data and ML lifecycle - which is why it is evidence-based, not a fad.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 1 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>DataOps, in one sentence</b><span>DevOps automation + Agile delivery + lean quality, applied to the whole data and ML lifecycle.</span></div>
+      <div class="cheat-item"><b>The reliability tax</b><span>Hidden cost of fragile data: rework + delay + distrust + risk. Name it to fund the fix.</span></div>
+      <div class="cheat-item"><b>Artisanal vs industrialized</b><span>Steps in someone's head, caught by eye vs steps in code, caught by automated gates.</span></div>
+      <div class="cheat-item"><b>What it buys</b><span>Speed with safety, trust by construction, resilience to turnover, compounding leverage.</span></div>
+      <div class="cheat-item"><b>Three lineages</b><span>DevOps (automate delivery), Agile (ship small), lean (build in quality, cut waste).</span></div>
+      <div class="cheat-item"><b>Unity's lesson</b><span>Great model, bad data feed, ~$110M hit. Talent does not protect an un-industrialized pipeline.</span></div>
+      <div class="cheat-item"><b>The Monday move</b><span>Ask the five questions. Hesitation is the answer. Firefighting % is your fastest ROI hook.</span></div>
+      <div class="cheat-item"><b>Next session</b><span>a2 maps the four DataOps pillars each to a specific business risk you can budget against.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 1 of 6 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="../index.html">← All sessions</a> &nbsp;·&nbsp; <a href="a2-four-pillars.html">Next: Four pillars, four business risks →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

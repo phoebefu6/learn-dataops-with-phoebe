@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 2 · Orchestration: pipelines as code - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Builder session 2 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Builder track · Session 2 of 8</div>
+    <h1>Orchestration: <span class="accent">pipelines as code</span></h1>
+    <p class="sub">In b1 you built RetailPulse: a repo, a clean_sales pipeline, tests, green CI, a Dockerfile. But right now that pipeline only runs when you type the command. Tonight you promote it from a script someone remembers to run into a scheduled, retried, observable Airflow DAG - the difference between a chore and a system. By the end, RetailPulse cleans yesterday's sales every morning at 6am whether you are awake or not.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: DA · DE · DS · ML</span>
+      <span class="chip audience">Python · Airflow (or Dagster) · Docker</span>
+      <span class="chip time">v0.2</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-20 · Orchestration model</span>
+      <span class="a3" style="flex:5">20-42 · Build-along: DAG + backfill</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where RetailPulse is tonight</h2>
+    </div>
+    <p class="lede">Recap: RetailPulse v0.1 is a repo with <code>clean_sales(in_path, out_path)</code> that reads a raw sales CSV, drops null order ids, coerces the date, and writes <code>clean_sales.parquet</code>. It has a test, pre-commit, GitHub Actions CI, and a Dockerfile. Solid. But it is inert - it does nothing until a human runs it. Real data products run on their own, recover from failures, and let you see what happened. That is orchestration, and it is the single biggest jump from "I wrote a script" to "I run a data platform".</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill peach">★ Try it now command</span>
+      <span class="pill inkpill">Open-source stack + AWS notes</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      RetailPulse running as a scheduled Airflow DAG: extract -> clean -> load, wired with the TaskFlow API, running daily, retrying on transient failure, parameterized by execution date, and safe to backfill across a range of history. You will understand the five words that make up Airflow's whole mental model, and why idempotency is the property that lets you sleep.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: SCRIPT TO DAG ============ -->
+  <section class="section" id="why-orchestrate">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers why orchestration exists</span>
+      <h2>From a script to a scheduled DAG <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">A script is a one-shot. You run it, it works or it does not, and if it fails at 3am you find out from an angry stakeholder. An orchestrated DAG is the same logic wrapped in a system that schedules it, orders its steps, retries the flaky ones, lets you re-run history, and shows you a green-or-red grid of every run. Same code, industrial packaging.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A manual script on the left becomes an orchestrated DAG on the right, gaining scheduling, retries, backfills, and visibility">
+        <style>
+          .b2sT { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
+          .b2sL { font: 400 12.5px Inter, sans-serif; fill: #CCFBF1; }
+          .b2sX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b2sN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b2sArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b2sAh); }
+        </style>
+        <defs>
+          <marker id="b2sAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="55" width="220" height="90" rx="12" fill="#134E4A"/>
+        <text class="b2sT" x="54" y="88">Script</text>
+        <text class="b2sL" x="54" y="110">python pipeline.py</text>
+        <text class="b2sL" x="54" y="130">one manual run · hope it works</text>
+        <line class="b2sArr" x1="252" y1="100" x2="330" y2="100"/>
+        <rect x="335" y="40" width="285" height="140" rx="12" fill="#0F766E"/>
+        <text class="b2sT" x="359" y="70">Orchestrated DAG</text>
+        <text class="b2sL" x="359" y="96">scheduled · runs itself daily</text>
+        <text class="b2sL" x="359" y="116">retries transient failures</text>
+        <text class="b2sL" x="359" y="136">backfills missed history</text>
+        <text class="b2sL" x="359" y="156">visible: green/red run grid</text>
+        <rect x="660" y="70" width="180" height="80" rx="12" fill="#2DD4BF"/>
+        <text class="b2sT" x="684" y="102" fill="#0F172A">A system,</text>
+        <text class="b2sT" x="684" y="124" fill="#0F172A">not a chore</text>
+        <line class="b2sArr" x1="622" y1="110" x2="658" y2="110"/>
+        <text class="b2sX" x="30" y="205">The logic inside is unchanged - clean_sales still does the work. Orchestration is the shell that makes it dependable.</text>
+        <rect x="30" y="230" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b2sN" x="54" y="242">You do not rewrite the pipeline to orchestrate it. You wrap it.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the same pipeline, before and after orchestration</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The five things an orchestrator gives you<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Whatever tool you pick, orchestration buys you five capabilities you would otherwise hand-build badly with cron and prayer:</p>
+        <ul>
+          <li><strong>Scheduling:</strong> "run this every day at 6am" or "every hour" declared once, in code, not scattered across crontabs on a box nobody can find.</li>
+          <li><strong>Dependencies:</strong> load must not start until clean finishes, and clean must not start until extract finishes. The orchestrator enforces the order and stops load if clean failed.</li>
+          <li><strong>Retries:</strong> a network blip should not page a human. Say "retry twice, two minutes apart" and transient failures heal themselves.</li>
+          <li><strong>Backfills:</strong> you added RetailPulse today but you have 90 days of history. One command runs the pipeline for every past day, in order.</li>
+          <li><strong>Visibility:</strong> a UI that shows every run, its logs, its duration, and whether it is green or red. When something breaks you see it, with the log, instead of guessing.</li>
+        </ul>
+        <div class="prompt-box good"><span class="label">★ Try it now (your terminal)</span>pip install "apache-airflow==2.9.*" --constraint \
+  "https://raw.githubusercontent.com/apache/airflow/constraints-2.9.3/constraints-3.11.txt"
+airflow standalone   # boots a local scheduler + webserver at http://localhost:8080
+# Standalone is for learning only - it prints an admin password on first run.</div>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The cron job nobody could find.</strong> A retail team's nightly sales load ran from a crontab on an engineer's personal EC2 box. She left. Three months later the load silently stopped, reports went stale, and it took two days to even locate the machine. Moving that job into an orchestrated DAG - versioned in the repo, visible in a UI, owned by the team - is not bureaucracy. It is the difference between a system and a liability.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why not just cron?<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Cron schedules. That is all it does. It cannot express "B depends on A", it will not retry, it has no backfill, and it gives you no run history beyond whatever you logged by hand. For a single independent job cron is fine. The moment you have steps that depend on each other, or you care about missed runs, or you want to see what happened last Tuesday, you have outgrown it. Orchestration is cron plus dependencies plus retries plus history plus a UI - which is why every data platform ends up with one.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: AIRFLOW MENTAL MODEL ============ -->
+  <section class="section" id="airflow-model">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the Airflow vocabulary you use daily</span>
+      <h2>The Airflow mental model <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Airflow has a big surface, but you use maybe 20% of it every day. That 20% is five words: DAG, task, operator, scheduler, executor. Learn what each one is and the docs stop feeling like a foreign language.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An Airflow DAG with three tasks extract, transform, load in order, driven by a scheduler and run by an executor">
+        <style>
+          .b2mT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b2mI { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .b2mL { font: 400 12px Inter, sans-serif; fill: #CCFBF1; }
+          .b2mX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b2mN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b2mArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b2mAh); }
+        </style>
+        <defs>
+          <marker id="b2mAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="40" y="40" width="140" height="46" rx="10" fill="#134E4A"/>
+        <text class="b2mT" x="64" y="60">Scheduler</text>
+        <text class="b2mL" x="64" y="78">decides what runs</text>
+        <rect x="40" y="100" width="140" height="46" rx="10" fill="#0F766E"/>
+        <text class="b2mT" x="64" y="120">Executor</text>
+        <text class="b2mL" x="64" y="138">runs the tasks</text>
+        <line class="b2mArr" x1="110" y1="86" x2="110" y2="98"/>
+        <rect x="240" y="60" width="600" height="140" rx="14" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b2mI" x="264" y="88">DAG: retailpulse_daily  (schedule = @daily)</text>
+        <rect x="270" y="110" width="150" height="60" rx="10" fill="#14B8A6"/>
+        <text class="b2mT" x="294" y="138">extract</text>
+        <text class="b2mL" x="294" y="156">pull raw CSV</text>
+        <rect x="475" y="110" width="150" height="60" rx="10" fill="#14B8A6"/>
+        <text class="b2mT" x="499" y="138">transform</text>
+        <text class="b2mL" x="499" y="156">clean_sales</text>
+        <rect x="680" y="110" width="140" height="60" rx="10" fill="#2DD4BF"/>
+        <text class="b2mI" x="704" y="138">load</text>
+        <text class="b2mI" x="704" y="156" font-weight="400" font-size="12">write parquet</text>
+        <line class="b2mArr" x1="422" y1="140" x2="473" y2="140"/>
+        <line class="b2mArr" x1="627" y1="140" x2="678" y2="140"/>
+        <line class="b2mArr" x1="182" y1="123" x2="238" y2="130"/>
+        <text class="b2mX" x="240" y="230">Each box is a task. An operator is the template that defines what a task does. The DAG is the whole graph and its schedule.</text>
+        <rect x="40" y="252" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b2mN" x="64" y="264">Scheduler picks the run, executor does the work, tasks flow in dependency order inside the DAG.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - DAG, tasks, scheduler, and executor in one picture</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Five words: DAG, task, operator, scheduler, executor<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The whole daily vocabulary:</p>
+        <ul>
+          <li><strong>DAG (Directed Acyclic Graph):</strong> your pipeline as a graph of steps with a direction and no loops. It carries the schedule ("@daily") and the dependency wiring. One DAG per logical pipeline - RetailPulse gets one.</li>
+          <li><strong>Task:</strong> a single node in the DAG - extract, or transform, or load. A task is one unit of work Airflow schedules, runs, retries, and shows you the log for.</li>
+          <li><strong>Operator:</strong> the template a task is built from. <code>PythonOperator</code> runs a Python function; there are operators for Bash, SQL, S3, and hundreds more. The modern TaskFlow <code>@task</code> decorator is just a friendlier way to make a PythonOperator.</li>
+          <li><strong>Scheduler:</strong> the brain. It reads your DAGs, works out which runs are due, and hands ready tasks to the executor. It is what makes "@daily" actually fire.</li>
+          <li><strong>Executor:</strong> the muscle. It runs the tasks - locally, on a pool of workers, or on Kubernetes. You rarely think about it until you need scale; for learning, the default is fine.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>Use TaskFlow, not raw operators</strong>
+          For Python pipelines in Airflow 2.x, prefer the <code>@dag</code> / <code>@task</code> TaskFlow API. It lets you write plain functions, pass return values between tasks directly, and skip most of the boilerplate. That is what both demos tonight use.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Airflow vs Dagster vs Prefect - an honest comparison<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>You will be asked "why Airflow and not X" in an interview or a planning meeting. A fair, short answer:</p>
+        <table class="clean">
+          <thead><tr><th>Tool</th><th>Model</th><th>Best when</th></tr></thead>
+          <tbody>
+            <tr><td>Airflow</td><td>Task-oriented; you wire steps</td><td>Ubiquitous, huge ecosystem, most jobs and hires - the safe default</td></tr>
+            <tr><td>Dagster</td><td>Asset-oriented; you declare data assets</td><td>You think in tables/models and want lineage + data-awareness built in</td></tr>
+            <tr><td>Prefect</td><td>Pythonic, dynamic flows</td><td>Highly dynamic pipelines, lighter setup, Python-native feel</td></tr>
+          </tbody>
+        </table>
+        <p>All three do scheduling, retries, and visibility. We teach Airflow because it is the one you are most likely to inherit or be hired for - but every concept tonight (DAG, task, schedule, backfill, idempotency) transfers directly. If your shop runs Dagster, you are learning the ideas, not just the buttons.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: IDEMPOTENCY ============ -->
+  <section class="section" id="idempotency">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers idempotency + partitioning for backfills</span>
+      <h2>Idempotency and backfills <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">Here is the property that separates a pipeline you can trust from one you cannot: a task must be safe to run twice. Re-running yesterday's job - because it failed, or you fixed a bug, or you are backfilling history - must produce the same result, not double the rows. That is idempotency, and the trick to getting it is partitioning by date.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An idempotent task overwrites a dated partition, so re-running any date produces the same result instead of appending duplicates">
+        <style>
+          .b2iT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b2iI { font: 700 13px Inter, sans-serif; fill: #0F172A; }
+          .b2iX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b2iN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b2iArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b2iAh); }
+        </style>
+        <defs>
+          <marker id="b2iAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="45" width="200" height="60" rx="12" fill="#134E4A"/>
+        <text class="b2iT" x="54" y="72">Run for 2026-07-01</text>
+        <text class="b2iT" x="54" y="92" font-weight="400" fill="#CCFBF1">writes date=2026-07-01/</text>
+        <rect x="30" y="130" width="200" height="60" rx="12" fill="#0F766E"/>
+        <text class="b2iT" x="54" y="157">Re-run 2026-07-01</text>
+        <text class="b2iT" x="54" y="177" font-weight="400" fill="#CCFBF1">overwrites same partition</text>
+        <line class="b2iArr" x1="240" y1="90" x2="330" y2="115"/>
+        <line class="b2iArr" x1="240" y1="150" x2="330" y2="125"/>
+        <rect x="335" y="80" width="220" height="80" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b2iI" x="359" y="112">clean_sales/</text>
+        <text class="b2iI" x="359" y="134" font-weight="400">date=2026-07-01/part.parquet</text>
+        <text class="b2iX" x="359" y="152" font-size="11.5">one file per date - never doubled</text>
+        <rect x="600" y="90" width="240" height="60" rx="12" fill="#2DD4BF"/>
+        <text class="b2iI" x="624" y="117">Same result every time</text>
+        <text class="b2iI" x="624" y="137" font-weight="400" font-size="12">safe to backfill 90 days</text>
+        <line class="b2iArr" x1="557" y1="120" x2="598" y2="120"/>
+        <rect x="30" y="212" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b2iN" x="54" y="224">Partition by date + overwrite = idempotent. Append = duplicates on every re-run. Choose overwrite.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - overwrite a dated partition so re-runs are always safe</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Idempotent tasks: safe to re-run, always<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>An idempotent task gives the same output no matter how many times it runs. The failure mode you are avoiding is the append: a task that tacks yesterday's rows onto a file every run, so a single retry silently doubles your data. Three rules keep you safe:</p>
+        <ul>
+          <li><strong>Partition by the run date:</strong> each day's output lands in its own folder, e.g. <code>clean_sales/date=2026-07-01/</code>. The date comes from the run's data interval, not <code>datetime.now()</code>.</li>
+          <li><strong>Overwrite, do not append:</strong> a task processing 2026-07-01 replaces that partition wholesale. Run it once or ten times - the partition is identical.</li>
+          <li><strong>Read your window explicitly:</strong> a task should read exactly the slice of input for its date, so it never depends on what happened to be lying around.</li>
+        </ul>
+        <p>Get this right and backfills become trivial: "run every day from 2026-04-01 to today" just replays the same idempotent task across 100 dates, each writing its own partition. Get it wrong and a backfill is a data-corruption event.</p>
+        <div class="callout tip">
+          <strong>Never use <code>datetime.now()</code> in a task</strong>
+          Use Airflow's logical/execution date (the data interval). <code>now()</code> means a re-run of an old date processes today's data - the opposite of idempotent. The whole backfill machinery depends on the task honoring the date it was handed.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Wrap RetailPulse in an Airflow DAG <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">Take the <code>clean_sales</code> function you already have and wrap it in a three-task TaskFlow DAG: extract pulls the raw CSV, transform calls clean_sales, load confirms the parquet landed. One new file, <code>dags/retailpulse_dag.py</code>, on a daily schedule. Your pipeline logic does not change - you are adding the shell.</p>
+
+    <div class="steps">
+      <div class="step"><p>Add an <code>dags/</code> folder to RetailPulse and point Airflow at it (set <code>AIRFLOW__CORE__DAGS_FOLDER</code> to that path, or drop the file in <code>~/airflow/dags</code> while learning).</p></div>
+      <div class="step"><p>Import your existing <code>clean_sales</code> from <code>retailpulse.pipeline</code> - do not reimplement it. The DAG orchestrates the code you tested in b1; it does not duplicate it.</p></div>
+      <div class="step"><p>Write <code>dags/retailpulse_dag.py</code> using the <code>@dag</code> / <code>@task</code> TaskFlow API from Prompt A: three tasks, wired extract -> transform -> load, <code>schedule="@daily"</code>.</p></div>
+      <div class="step"><p>Open the Airflow UI at localhost:8080, find <code>retailpulse_daily</code>, un-pause it, and trigger one run. Watch the three tasks go green in order in the grid view.</p></div>
+      <div class="step"><p>Click the transform task -> Logs. You are looking at the exact output of clean_sales, captured and timestamped. That visibility is half of what you came for.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt A - dags/retailpulse_dag.py (TaskFlow API)</span>from __future__ import annotations
+import pendulum
+from airflow.decorators import dag, task
+from retailpulse.pipeline import clean_sales
+
+@dag(
+    dag_id="retailpulse_daily",
+    schedule="@daily",
+    start_date=pendulum.datetime(2026, 7, 1, tz="UTC"),
+    catchup=False,
+    default_args={"retries": 2, "retry_delay": pendulum.duration(minutes=2)},
+    tags=["retailpulse"],
+)
+def retailpulse_daily():
+    @task
+    def extract() -&gt; str:
+        # in real life: download from S3/API. Here: point at the raw CSV.
+        return "data/raw_sales.csv"
+
+    @task
+    def transform(raw_path: str) -&gt; str:
+        out = "data/clean_sales.parquet"
+        rows = clean_sales(raw_path, out)   # your b1 function, unchanged
+        print(f"cleaned {rows} rows")
+        return out
+
+    @task
+    def load(clean_path: str) -&gt; None:
+        import pandas as pd
+        n = len(pd.read_parquet(clean_path))
+        print(f"loaded {n} rows from {clean_path}")
+
+    load(transform(extract()))
+
+retailpulse_daily()</div>
+
+    <div class="callout tip">
+      <strong>Data tip</strong>
+      Keep using a public or synthetic retail CSV (Kaggle "Online Retail" or a generated one). Never point a teaching DAG at confidential production data - the discipline set in b1 holds all track long.
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Schedule, config, and a backfill <span class="tag demo">★ 10 min · build your own</span></h2>
+    </div>
+    <p class="lede">A daily schedule is only useful if each run processes its own day and you can replay history. Now you parameterize the DAG by execution date, pull config from Airflow Variables instead of hardcoding, make the write idempotent by partition, and run a real backfill across a date range.</p>
+
+    <div class="steps">
+      <div class="step"><p>Read the run's data interval inside the task (Prompt B) and use it to build a dated input path and a dated output partition. No <code>datetime.now()</code> anywhere.</p></div>
+      <div class="step"><p>Move the raw-data location into an Airflow Variable (<code>retailpulse_raw_prefix</code>) or an env var, so dev and prod differ by config, not code. Read it with <code>Variable.get</code>.</p></div>
+      <div class="step"><p>Make the write idempotent: the transform overwrites <code>clean_sales/date=YYYY-MM-DD/</code>, so re-running a date replaces rather than appends. Confirm by running the same date twice and checking the row count is stable.</p></div>
+      <div class="step"><p>Set <code>catchup=True</code> and a <code>start_date</code> two weeks back, or run the CLI backfill in Prompt C for an explicit range. Watch the grid fill in one green column per day, oldest first.</p></div>
+      <div class="step"><p>Commit the DAG on a branch, open a PR, let b1's CI run. RetailPulse is now v0.2: orchestrated, scheduled, backfillable, still green.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt B - date-parameterized, idempotent transform</span>@task
+def transform(**context) -&gt; str:
+    from airflow.models import Variable
+    # the data interval start IS the logical date for this run
+    ds = context["data_interval_start"].format("YYYY-MM-DD")
+    raw_prefix = Variable.get("retailpulse_raw_prefix", default_var="data/raw")
+    in_path = f"{raw_prefix}/date={ds}/sales.csv"
+    out_dir = f"data/clean_sales/date={ds}"          # dated partition
+    # clean_sales overwrites this partition -&gt; safe to re-run / backfill
+    rows = clean_sales(in_path, f"{out_dir}/part.parquet")
+    print(f"[{ds}] wrote {rows} rows to {out_dir}")
+    return out_dir</div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt C - run a backfill across a date range</span># Replays the idempotent DAG for every day in the window, oldest first.
+airflow dags backfill retailpulse_daily \
+  --start-date 2026-07-01 \
+  --end-date   2026-07-14
+
+# Because each run overwrites its own date= partition, re-running this
+# exact command changes nothing. That is idempotency paying off.</div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The backfill that saved a launch.</strong> A retail analytics team shipped a fixed currency-conversion bug on a Thursday. Ninety days of history were wrong. Because the pipeline was idempotent and partitioned by date, the fix was one backfill command overnight - every day recomputed cleanly, no duplicates, no manual surgery. The team that had append-based, non-idempotent jobs next door spent a week reconstructing theirs by hand. Same bug, wildly different Friday.</p>
+    </div>
+    <div class="callout tip">
+      <strong>☁️ AWS mapping</strong>
+      Airflow maps directly to <strong>Amazon MWAA</strong> (Managed Workflows for Apache Airflow) - the same DAG file, no code change, just managed infrastructure. If you want AWS-native instead, <strong>Step Functions</strong> orchestrates state machines and <strong>Glue Workflows</strong> chains Glue jobs. The DAG concept - scheduled, ordered, retried, observable steps - is identical whichever you pick; you are choosing who runs the scheduler.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 40-55 min total</span></h2>
+    </div>
+    <ul>
+      <li>Finish both demos if you did not live - especially the backfill. Everyone in this track should watch a grid fill with green columns at least once.</li>
+      <li>Break a task on purpose (raise an exception in transform) and watch the two retries fire two minutes apart before the run finally goes red. Feel the retry safety net.</li>
+      <li>Add a fourth task - <code>row_count_check</code> - that fails if the cleaned partition has zero rows. This is a preview of b3's data testing.</li>
+      <li>Prove idempotency: run <code>2026-07-05</code> three times and confirm the partition row count never changes. If it grows, your write is appending - fix it to overwrite.</li>
+      <li>Optional reading: the Airflow "TaskFlow API" tutorial and the "Data Interval" concepts page - now a review of what you already built.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This track teaches DataOps on an open-source stack from the tools' official docs, with AWS mapping notes. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Orchestration concepts + why not cron</span><span class="note">Part 1 · scheduling, dependencies, retries, backfills, visibility</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Airflow mental model + TaskFlow API</span><span class="note">Part 2 + Demo 1 · DAG, task, operator, scheduler, executor</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Idempotency, data intervals, backfills</span><span class="note">Part 3 + Demo 2 · partition-by-date, overwrite, replay a range</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Dagster / Prefect comparison</span><span class="note">Part 2 self-study · positioning, not a full tutorial</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Amazon MWAA / Step Functions / Glue mapping</span><span class="note">Demo 2 sidebar · concept parity, not an AWS deploy guide</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · What does an orchestrator give you that a plain script does not?</p>
+      <button class="qopt" type="button">A · Faster Python execution</button>
+      <button class="qopt" type="button">B · Automatic code formatting</button>
+      <button class="qopt" type="button">C · Scheduling, dependencies, retries, backfills, and run visibility</button>
+      <p class="qwhy">The logic is unchanged - orchestration is the shell that schedules it, orders its steps, retries failures, replays history, and shows you every run in a UI.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · In Airflow, what is the difference between a task and an operator?</p>
+      <button class="qopt" type="button">A · An operator is the template; a task is one instance of that template running as a node in the DAG</button>
+      <button class="qopt" type="button">B · They are the same thing with two names</button>
+      <button class="qopt" type="button">C · A task schedules the DAG; an operator runs the webserver</button>
+      <p class="qwhy">Operator = the reusable template (PythonOperator, BashOperator...). Task = one node built from an operator that the scheduler runs and retries. The scheduler and executor are separate again.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · Why must a task use the run's data interval instead of <code>datetime.now()</code>?</p>
+      <button class="qopt" type="button">A · now() is slower to compute</button>
+      <button class="qopt" type="button">B · Using the run date makes the task idempotent - re-running an old date reprocesses that date's data, so backfills are safe and re-runs never duplicate</button>
+      <button class="qopt" type="button">C · Airflow forbids importing datetime</button>
+      <p class="qwhy">With now(), re-running 2026-07-01 would process today's data - the opposite of idempotent. Honoring the handed-in date lets you overwrite the right partition and backfill history cleanly.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 2 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Orchestration in one line</b><span>Wrap your pipeline in a system that schedules, orders, retries, backfills, and shows every run.</span></div>
+      <div class="cheat-item"><b>Five words</b><span>DAG (the graph + schedule), task (one node), operator (task template), scheduler (picks runs), executor (runs them).</span></div>
+      <div class="cheat-item"><b>Use TaskFlow</b><span>@dag / @task decorators for Python pipelines - plain functions, return values pass between tasks, minimal boilerplate.</span></div>
+      <div class="cheat-item"><b>Idempotency rule</b><span>Partition by run date + overwrite the partition. Never append. Re-run and backfill become safe and boring.</span></div>
+      <div class="cheat-item"><b>Never now()</b><span>Use data_interval_start, not datetime.now(). The date Airflow hands you is what makes backfills correct.</span></div>
+      <div class="cheat-item"><b>Config, not hardcode</b><span>Locations in Airflow Variables / env vars. Dev vs prod differ by config, retries + schedule in default_args.</span></div>
+      <div class="cheat-item"><b>AWS mapping</b><span>Airflow ≈ Amazon MWAA (same DAG). AWS-native: Step Functions, Glue Workflows. Same concept.</span></div>
+      <div class="cheat-item"><b>Running project</b><span>RetailPulse v0.2: scheduled, backfillable Airflow DAG. Next: b3 adds data tests + contracts.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 2 of 8 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="b1-foundations-repo.html">← Foundations</a> &nbsp;·&nbsp; <a href="b3-data-testing-contracts.html">Next: Data testing and contracts →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

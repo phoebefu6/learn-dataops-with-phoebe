@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>learn dataops with phoebe - a two-track course on shipping data, ML and DB changes safely</title>
+<meta name="description" content="A two-track DataOps course: a leader track (no code) and a builder track that grows one real data product, RetailPulse, through DevOps, data CI/CD, MLOps and DBOps. By Phoebe Fu.">
+<link rel="stylesheet" href="assets/style.css?v=1">
+<style>
+  .stats-row { display: flex; gap: 2.4rem; margin-top: 1.5rem; flex-wrap: wrap; }
+  .stat b { display: block; font-size: 2.1rem; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: .72rem; opacity: .85; text-transform: uppercase; letter-spacing: .09em; font-weight: 600; }
+
+  .course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .course-card {
+    border: 1px solid var(--hairline);
+    border-top: 4px solid var(--diff, var(--indigo));
+    border-radius: var(--radius);
+    padding: 1.2rem 1.3rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
+    position: relative;
+  }
+  .course-card:hover { border-color: var(--indigo-soft); border-top-color: var(--diff, var(--indigo)); box-shadow: 0 8px 28px rgba(15,23,42,.12); transform: translateY(-3px); }
+  .course-card .cicon { font-size: 1.7rem; line-height: 1; }
+  .course-card .cnum { font-size: .72rem; font-weight: 700; color: var(--indigo); text-transform: uppercase; letter-spacing: .1em; }
+  .course-card h3 { font-size: 1.05rem; font-weight: 800; line-height: 1.3; }
+  .course-card p { font-size: .85rem; color: var(--muted); flex: 1; }
+  .course-card .meta { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+  .diff-legend { display: flex; gap: 1rem; margin-top: 1.6rem; font-size: .74rem; color: var(--muted); font-weight: 600; flex-wrap: wrap; }
+  .diff-legend i { display: inline-block; width: .85rem; height: .35rem; border-radius: 999px; margin-right: .35rem; vertical-align: middle; }
+
+  .paths { margin-top: 2.6rem; }
+  .paths h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .3rem; }
+  .paths .plede { color: var(--muted); font-size: .92rem; margin-bottom: .8rem; }
+  .path { display: flex; gap: .55rem; align-items: center; padding: .75rem 0; border-bottom: .5px solid var(--hairline); flex-wrap: wrap; }
+  .path:last-child { border-bottom: none; }
+  .path b { min-width: 15.5rem; font-size: .9rem; }
+  .path .pstep { background: var(--indigo-50); color: var(--indigo); border-radius: 999px; padding: .16rem .68rem; font-weight: 700; font-size: .8rem; text-decoration: none; transition: all .12s ease; }
+  .path .pstep:hover { background: var(--indigo); color: #fff; }
+  .path .parr { color: var(--faint); font-weight: 700; }
+
+  .mm-section { margin-top: 1.6rem; }
+  .mm-section h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .2rem; }
+  .mm-section .mm-lede { color: var(--muted); font-size: .92rem; margin-bottom: .4rem; }
+  .mm-wrap { border: 1px solid var(--hairline); border-radius: var(--radius); background: linear-gradient(180deg,#fff,#ECFDF9); padding: .6rem; overflow-x: auto; }
+  .mm-svg { width: 100%; height: auto; display: block; max-width: 60rem; margin: 0 auto; min-width: 34rem; }
+  .mm-link { cursor: pointer; text-decoration: none; }
+  .mm-node rect { transition: opacity .15s ease, filter .15s ease; }
+  .mm-node text { pointer-events: none; }
+  .mm-link:hover .mm-node rect { filter: brightness(1.06); }
+  .mm-edge { transition: opacity .15s ease; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe</div>
+    <h1>Two tracks from data-that-breaks to data-that-ships</h1>
+    <p class="sub">A leader track that teaches you to think, question, and fund DataOps without a line of code - and a builder track that grows one real data product, RetailPulse, from a raw CSV into a fully governed pipeline with CI/CD, orchestration, data tests, database migrations, a monitored model, and a prod release. DevOps basics, data CI/CD, MLOps and DBOps, taught on an open-source stack with AWS mapping notes.</p>
+    <div class="stats-row">
+      <div class="stat"><b data-count="2">2</b><span>tracks</span></div>
+      <div class="stat"><b data-count="14">14</b><span>sessions</span></div>
+      <div class="stat"><b data-count="4">4</b><span>pillars</span></div>
+      <div class="stat"><b data-count="1">1</b><span>running project</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section">
+    <div class="paths" style="margin-top:0">
+      <h2>The leader track 🤝 <span style="font-size:.85rem;font-weight:600;color:var(--muted)">· for C-level, managers &amp; data leads · 6 x 45 min · no code, ever</span></h2>
+      <p class="plede">Thinking mode: what DataOps is, why fragile data costs money, how mature your org is, and how to make the build-buy-fund calls - each session ends with questions to ask your data team on Monday.</p>
+    </div>
+    <div class="course-grid">
+      <a class="course-card" href="courses/a1-why-dataops.html" style="--diff:#34D399">
+        <span class="cicon">🏭</span>
+        <span class="cnum">Leader 1 · easy</span>
+        <h3>Why DataOps? From artisanal to industrialized data</h3>
+        <p>The reliability tax fragile pipelines charge you, and the three lineages - DevOps, Agile, lean - that DataOps braids together.</p>
+        <span class="meta"><span class="pill amber">▶ Leaders start here</span></span>
+      </a>
+      <a class="course-card" href="courses/a2-four-pillars.html" style="--diff:#34D399">
+        <span class="cicon">🎯</span>
+        <span class="cnum">Leader 2 · easy</span>
+        <h3>Four pillars, four business risks</h3>
+        <p>DevOps, data CI/CD, MLOps and DBOps - each framed as the dollar risk it retires and the question it lets you ask.</p>
+        <span class="meta"><span class="pill light">Risk-map exercise</span></span>
+      </a>
+      <a class="course-card" href="courses/a3-maturity-model.html" style="--diff:#FBBF24">
+        <span class="cicon">📈</span>
+        <span class="cnum">Leader 3 · medium</span>
+        <h3>The maturity model and the metrics that matter</h3>
+        <p>Five levels from heroic-and-fragile to self-service, plus DORA-for-data: the four numbers that tell the truth.</p>
+        <span class="meta"><span class="pill light">Self-assessment</span></span>
+      </a>
+      <a class="course-card" href="courses/a4-build-buy-oss.html" style="--diff:#FB923C">
+        <span class="cicon">💸</span>
+        <span class="cnum">Leader 4 · deciding</span>
+        <h3>Build, buy, or open-source: the platform bet</h3>
+        <p>OSS stack vs Databricks/Snowflake/AWS, real cost ranges, and the case for one governed platform over a tool zoo.</p>
+        <span class="meta"><span class="pill light">Score-the-option exercise</span></span>
+      </a>
+      <a class="course-card" href="courses/a5-org-and-culture.html" style="--diff:#FBBF24">
+        <span class="cicon">🧩</span>
+        <span class="cnum">Leader 5 · medium</span>
+        <h3>Who owns what: org design and data contracts</h3>
+        <p>Central team vs data mesh, team topologies, and data contracts as the social technology that breaks silos.</p>
+        <span class="meta"><span class="pill light">Ownership-map exercise</span></span>
+      </a>
+      <a class="course-card" href="courses/a6-roi-and-roadmap.html" style="--diff:#FB923C">
+        <span class="cicon">📊</span>
+        <span class="cnum">Leader 6 · deciding</span>
+        <h3>Proving it: ROI and a 90-day roadmap</h3>
+        <p>The honest business case, the metrics a board will believe, and a phased plan that ships value in the first quarter.</p>
+        <span class="meta"><span class="pill light">90-day plan</span></span>
+      </a>
+    </div>
+
+    <div class="paths">
+      <h2>The builder track 🛠️ <span style="font-size:.85rem;font-weight:600;color:var(--muted)">· for practitioners: DA · DE · DS · ML · 8 x 45 min · open-source stack + AWS notes</span></h2>
+      <p class="plede">One growing artifact: RetailPulse, a retail sales data product. Every session industrializes the same repo - and every capability is built by hand first, so the tooling never gets to be magic.</p>
+    </div>
+    <div class="course-grid">
+      <a class="course-card" href="courses/b1-foundations-repo.html" style="--diff:#34D399">
+        <span class="cicon">🧱</span>
+        <span class="cnum">Builder 1 · easy</span>
+        <h3>Foundations: repo, Git flow, CI, Docker</h3>
+        <p>Scaffold RetailPulse, wire pre-commit and a GitHub Actions pipeline that lints and tests every PR, and containerize it.</p>
+        <span class="meta"><span class="pill amber">▶ Builders start here</span></span>
+      </a>
+      <a class="course-card" href="courses/b2-orchestration.html" style="--diff:#34D399">
+        <span class="cicon">🌀</span>
+        <span class="cnum">Builder 2 · easy</span>
+        <h3>Orchestration: pipelines as code</h3>
+        <p>Turn a script into an Airflow DAG - tasks, schedules, idempotency, backfills - with a Dagster comparison and env config.</p>
+        <span class="meta"><span class="pill light">RetailPulse v0.2</span></span>
+      </a>
+      <a class="course-card" href="courses/b3-data-testing-contracts.html" style="--diff:#FBBF24">
+        <span class="cicon">✅</span>
+        <span class="cnum">Builder 3 · medium</span>
+        <h3>Data testing and contracts</h3>
+        <p>Great Expectations and dbt tests, a data contract for the sales table, and a quality gate that fails the PR on breach.</p>
+        <span class="meta"><span class="pill light">RetailPulse v0.3</span></span>
+      </a>
+      <a class="course-card" href="courses/b4-dbops-migrations.html" style="--diff:#FBBF24">
+        <span class="cicon">🗄️</span>
+        <span class="cnum">Builder 4 · medium</span>
+        <h3>DBOps: schema migrations that never break prod</h3>
+        <p>Version the database with Flyway/Alembic, run migrations in CI/CD, and rehearse the expand-contract rollback.</p>
+        <span class="meta"><span class="pill light">RetailPulse v0.4</span></span>
+      </a>
+      <a class="course-card" href="courses/b5-experiment-tracking.html" style="--diff:#FB923C">
+        <span class="cicon">🔬</span>
+        <span class="cnum">Builder 5 · hands-on</span>
+        <h3>MLOps I: experiment tracking and the registry</h3>
+        <p>A demand-forecast model with MLflow tracking, a model registry, reproducible runs, and model CI that gates on a metric.</p>
+        <span class="meta"><span class="pill light">RetailPulse v0.5</span></span>
+      </a>
+      <a class="course-card" href="courses/b6-model-deploy-monitor.html" style="--diff:#FB923C">
+        <span class="cicon">🚀</span>
+        <span class="cnum">Builder 6 · hands-on</span>
+        <h3>MLOps II: deploy, monitor, retrain</h3>
+        <p>Serve the model with FastAPI + Docker, watch for drift with Evidently, and wire the trigger that says retrain now.</p>
+        <span class="meta"><span class="pill light">RetailPulse v0.6</span></span>
+      </a>
+      <a class="course-card" href="courses/b7-observability-iac.html" style="--diff:#FB923C">
+        <span class="cicon">📡</span>
+        <span class="cnum">Builder 7 · hands-on</span>
+        <h3>Observability, secrets and IaC</h3>
+        <p>Pipeline logs and metrics, freshness and volume alerts, secrets done right, and Docker Compose that stands the stack up.</p>
+        <span class="meta"><span class="pill light">RetailPulse v0.7</span></span>
+      </a>
+      <a class="course-card" href="courses/b8-full-cd-capstone.html" style="--diff:#F87171">
+        <span class="cicon">🎓</span>
+        <span class="cnum">Builder 8 · hardest</span>
+        <h3>Full CD to prod: the capstone</h3>
+        <p>Promote dev -> staging -> prod, release data, model and database together safely, tag v1.0, and run the graduation checklist.</p>
+        <span class="meta"><span class="pill light">RetailPulse v1.0</span></span>
+      </a>
+    </div>
+    <div class="diff-legend">
+      <span><i style="background:#34D399"></i>easy - everyone</span>
+      <span><i style="background:#FBBF24"></i>medium</span>
+      <span><i style="background:#FB923C"></i>hands-on / deciding</span>
+      <span><i style="background:#F87171"></i>hardest</span>
+    </div>
+
+    <div class="paths">
+      <h2>Choose your path 🗺️</h2>
+      <p class="plede">Two doors, one course. Leaders never see a terminal; builders never sit through strategy they have not first felt break in a pipeline.</p>
+      <div class="path"><b>🤝 Leader (no code, ever)</b>
+        <a class="pstep" href="courses/a1-why-dataops.html">a1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a2-four-pillars.html">a2</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a3-maturity-model.html">a3</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a4-build-buy-oss.html">a4</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a5-org-and-culture.html">a5</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a6-roi-and-roadmap.html">a6</a>
+      </div>
+      <div class="path"><b>🛠️ Builder (grow RetailPulse)</b>
+        <a class="pstep" href="courses/b1-foundations-repo.html">b1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b2-orchestration.html">b2</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b3-data-testing-contracts.html">b3</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b4-dbops-migrations.html">b4</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b5-experiment-tracking.html">b5</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b6-model-deploy-monitor.html">b6</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b7-observability-iac.html">b7</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b8-full-cd-capstone.html">b8</a>
+      </div>
+      <div class="path"><b>🌱 Curious follower (a taste)</b>
+        <a class="pstep" href="courses/a1-why-dataops.html">a1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a2-four-pillars.html">a2</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b1-foundations-repo.html">b1</a>
+      </div>
+      <div class="path"><b>🚀 Full journey (fund AND build)</b>
+        <a class="pstep" href="courses/a1-why-dataops.html">a1-a6</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b1-foundations-repo.html">b1-b8</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section mm-section">
+    <h2>The knowledge map 🧠</h2>
+    <p class="mm-lede">Both tracks at a glance - hover a session to spotlight its concepts, click any node to jump in.</p>
+    <div class="mm-wrap"><div id="mindmap"></div></div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>learn-dataops-with-phoebe · by Phoebe Fu · open-source stack: Git · GitHub Actions · Docker · Airflow · dbt · Great Expectations · MLflow · Evidently</span>
+  </footer>
+</main>
+
+<script>
+window.MINDMAP_DATA = {
+  title: "Learn\nDataOps",
+  centerColor: "#0F766E",
+  sessions: [
+    { label: "Why\nDataOps", href: "courses/a1-why-dataops.html", color: "#34D399",
+      concepts: [
+        { label: "Reliability tax", href: "courses/a1-why-dataops.html" },
+        { label: "Artisanal to industrial", href: "courses/a1-why-dataops.html" },
+        { label: "Three lineages", href: "courses/a1-why-dataops.html" } ] },
+    { label: "Four\npillars", href: "courses/a2-four-pillars.html", color: "#34D399",
+      concepts: [
+        { label: "Pillar = dollar risk", href: "courses/a2-four-pillars.html" },
+        { label: "The pipeline model", href: "courses/a2-four-pillars.html" } ] },
+    { label: "Maturity\nmodel", href: "courses/a3-maturity-model.html", color: "#FBBF24",
+      concepts: [
+        { label: "Five levels", href: "courses/a3-maturity-model.html" },
+        { label: "DORA for data", href: "courses/a3-maturity-model.html" },
+        { label: "Self-assessment", href: "courses/a3-maturity-model.html" } ] },
+    { label: "Build, buy\nor OSS", href: "courses/a4-build-buy-oss.html", color: "#FB923C",
+      concepts: [
+        { label: "OSS vs managed", href: "courses/a4-build-buy-oss.html" },
+        { label: "TCO ranges", href: "courses/a4-build-buy-oss.html" },
+        { label: "One platform bet", href: "courses/a4-build-buy-oss.html" } ] },
+    { label: "Org +\ncontracts", href: "courses/a5-org-and-culture.html", color: "#FBBF24",
+      concepts: [
+        { label: "Central vs mesh", href: "courses/a5-org-and-culture.html" },
+        { label: "Team topologies", href: "courses/a5-org-and-culture.html" },
+        { label: "Data contracts", href: "courses/a5-org-and-culture.html" } ] },
+    { label: "ROI +\nroadmap", href: "courses/a6-roi-and-roadmap.html", color: "#FB923C",
+      concepts: [
+        { label: "The business case", href: "courses/a6-roi-and-roadmap.html" },
+        { label: "90-day roadmap", href: "courses/a6-roi-and-roadmap.html" } ] },
+    { label: "Foundations\n& repo", href: "courses/b1-foundations-repo.html", color: "#34D399",
+      concepts: [
+        { label: "Git flow", href: "courses/b1-foundations-repo.html" },
+        { label: "GitHub Actions CI", href: "courses/b1-foundations-repo.html" },
+        { label: "Docker", href: "courses/b1-foundations-repo.html" } ] },
+    { label: "Orchestration", href: "courses/b2-orchestration.html", color: "#34D399",
+      concepts: [
+        { label: "Airflow DAGs", href: "courses/b2-orchestration.html" },
+        { label: "Idempotency", href: "courses/b2-orchestration.html" },
+        { label: "Backfills", href: "courses/b2-orchestration.html" } ] },
+    { label: "Testing +\ncontracts", href: "courses/b3-data-testing-contracts.html", color: "#FBBF24",
+      concepts: [
+        { label: "Great Expectations", href: "courses/b3-data-testing-contracts.html" },
+        { label: "Data contracts", href: "courses/b3-data-testing-contracts.html" },
+        { label: "Quality gates", href: "courses/b3-data-testing-contracts.html" } ] },
+    { label: "DBOps +\nmigrations", href: "courses/b4-dbops-migrations.html", color: "#FBBF24",
+      concepts: [
+        { label: "Versioned schema", href: "courses/b4-dbops-migrations.html" },
+        { label: "Migration in CI", href: "courses/b4-dbops-migrations.html" },
+        { label: "Expand-contract", href: "courses/b4-dbops-migrations.html" } ] },
+    { label: "Experiment\ntracking", href: "courses/b5-experiment-tracking.html", color: "#FB923C",
+      concepts: [
+        { label: "MLflow tracking", href: "courses/b5-experiment-tracking.html" },
+        { label: "Model registry", href: "courses/b5-experiment-tracking.html" },
+        { label: "Model CI", href: "courses/b5-experiment-tracking.html" } ] },
+    { label: "Deploy +\nmonitor", href: "courses/b6-model-deploy-monitor.html", color: "#FB923C",
+      concepts: [
+        { label: "FastAPI serving", href: "courses/b6-model-deploy-monitor.html" },
+        { label: "Drift monitoring", href: "courses/b6-model-deploy-monitor.html" },
+        { label: "Retrain trigger", href: "courses/b6-model-deploy-monitor.html" } ] },
+    { label: "Observability\n& IaC", href: "courses/b7-observability-iac.html", color: "#FB923C",
+      concepts: [
+        { label: "Freshness alerts", href: "courses/b7-observability-iac.html" },
+        { label: "Secrets", href: "courses/b7-observability-iac.html" },
+        { label: "Docker Compose", href: "courses/b7-observability-iac.html" } ] },
+    { label: "Full CD\ncapstone", href: "courses/b8-full-cd-capstone.html", color: "#F87171",
+      concepts: [
+        { label: "Env promotion", href: "courses/b8-full-cd-capstone.html" },
+        { label: "Release together", href: "courses/b8-full-cd-capstone.html" },
+        { label: "Graduation", href: "courses/b8-full-cd-capstone.html" } ] }
+  ]
+};
+</script>
+<script src="assets/mindmap.js?v=1"></script>
+<script src="assets/app.js?v=1"></script>
+</body>
+</html>

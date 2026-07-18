@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 1 · Foundations: repo, Git flow, CI, Docker - learn dataops with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-dataops-with-phoebe</a> / Builder session 1 of 8</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn DataOps with Phoebe · Builder track · Session 1 of 8</div>
+    <h1>Foundations: <span class="accent">repo, Git flow, CI, Docker</span></h1>
+    <p class="sub">DataOps is DevOps discipline pointed at data. Before a single pipeline runs, the data product needs the same spine every serious software project has: one repo as the source of truth, a branching flow, an automated safety net, and a container that runs the same everywhere. Tonight you build that spine for RetailPulse - and green CI on your first pull request.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: DA · DE · DS · ML</span>
+      <span class="chip audience">Python 3.10+ · Git · Docker · a GitHub account</span>
+      <span class="chip time">Start here</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-18 · Why the spine</span>
+      <span class="a3" style="flex:5">18-42 · Build-along: scaffold + CI</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>How this track works</h2>
+    </div>
+    <p class="lede">Eight sessions, one growing artifact: <strong>RetailPulse</strong>, a retail sales data product that starts tonight as a repo with one small pipeline and graduates in session b8 with orchestration, data contracts, database migrations, a monitored forecast model, and a promote-to-prod release. Every session industrializes the same code. The rule of this track: you build each capability by hand and feel it break first, so the tooling never gets to be magic.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill peach">★ Try it now command</span>
+      <span class="pill inkpill">Open-source stack + AWS notes</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A RetailPulse repo laid out like a real project, trunk-based Git flow you can defend in a review, pre-commit hooks that format and lint before code ever lands, a GitHub Actions pipeline that runs your tests on every pull request, and a Dockerfile so "works on my machine" stops being a sentence anyone says.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: WHAT DATAOPS INDUSTRIALIZES ============ -->
+  <section class="section" id="what-dataops">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the DataOps definition + the CI/CD idea</span>
+      <h2>What DataOps actually industrializes <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Strip the buzzword and DataOps is a promise: any change to your data, models, or schema can go from a laptop to production quickly, safely, and without heroics - because automated gates catch mistakes instead of on-call humans. That promise rests on four moves borrowed straight from DevOps. Tonight is move one: put everything in version control and let a machine check it.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="From artisanal to industrialized: a change flows through version control, an automated gate, and a repeatable run to production">
+        <style>
+          .b1pT { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
+          .b1pL { font: 400 12.5px Inter, sans-serif; fill: #CCFBF1; }
+          .b1pX { font: 400 13px Inter, sans-serif; fill: #64748B; }
+          .b1pN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b1pArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b1pAh); }
+        </style>
+        <defs>
+          <marker id="b1pAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="60" width="180" height="64" rx="12" fill="#134E4A"/>
+        <text class="b1pT" x="54" y="88">1 · Commit</text>
+        <text class="b1pL" x="54" y="108">code + config in Git</text>
+        <rect x="255" y="60" width="180" height="64" rx="12" fill="#0F766E"/>
+        <text class="b1pT" x="279" y="88">2 · Automated gate</text>
+        <text class="b1pL" x="279" y="108">lint · test · quality</text>
+        <rect x="480" y="60" width="180" height="64" rx="12" fill="#14B8A6"/>
+        <text class="b1pT" x="504" y="88">3 · Repeatable run</text>
+        <text class="b1pL" x="504" y="108">same container, anywhere</text>
+        <rect x="705" y="60" width="150" height="64" rx="12" fill="#2DD4BF"/>
+        <text class="b1pT" x="729" y="88" fill="#0F172A">4 · Production</text>
+        <text class="b1pL" x="729" y="108" fill="#134E4A">shipped, trusted</text>
+        <line class="b1pArr" x1="212" y1="92" x2="253" y2="92"/>
+        <line class="b1pArr" x1="437" y1="92" x2="478" y2="92"/>
+        <line class="b1pArr" x1="662" y1="92" x2="703" y2="92"/>
+        <text class="b1pX" x="30" y="165">Artisanal data: steps 2 and 3 are a human remembering to run things. DataOps: they are code that runs itself.</text>
+        <rect x="30" y="210" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b1pN" x="54" y="222">Session b1 builds steps 1-3 for RetailPulse. Step 4 is the whole rest of the track.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the DataOps assembly line: commit, gate, repeatable run, production</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The four moves DataOps borrows from DevOps<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>DataOps is not a product you buy. It is a set of practices - version control, continuous integration, continuous delivery, and observability - applied to the data and ML lifecycle instead of just application code. The four that matter:</p>
+        <ul>
+          <li><strong>Version everything:</strong> pipeline code, SQL, config, and eventually the schema and the model - all in Git. If it is not in version control, it does not exist and cannot be reviewed, reverted, or trusted.</li>
+          <li><strong>Continuous integration (CI):</strong> every change is automatically linted and tested before it merges. The machine, not the reviewer, catches the broken import at 2am.</li>
+          <li><strong>Continuous delivery (CD):</strong> merged changes flow to environments through the same automated path every time - no manual copy-paste to a server.</li>
+          <li><strong>Containers:</strong> the code carries its own environment, so it runs identically on your laptop, in CI, and in prod. "Works on my machine" becomes irrelevant.</li>
+        </ul>
+        <div class="prompt-box good"><span class="label">★ Try it now (your terminal)</span>git --version &amp;&amp; docker --version &amp;&amp; python --version
+# All three should print. If Docker is missing, install Docker Desktop - you need it in Part 3.</div>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The Friday deploy that took the dashboards down.</strong> A retail analytics team shipped a one-line SQL change straight to prod on a Friday. It silently changed a column type; every downstream dashboard broke over the weekend and nobody knew until Monday's board meeting. The fix was not a smarter analyst - it was a CI gate that would have caught the schema change in 40 seconds. That gate is what you build tonight.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>DataOps, MLOps, DevOps - who owns what<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The terms overlap and people fight about the borders. A working map:</p>
+        <table class="clean">
+          <thead><tr><th>Discipline</th><th>Object it ships safely</th><th>In this course</th></tr></thead>
+          <tbody>
+            <tr><td>DevOps</td><td>Application code</td><td>The spine - b1 (this session)</td></tr>
+            <tr><td>Data CI/CD</td><td>Pipelines and datasets</td><td>b2 orchestration, b3 testing</td></tr>
+            <tr><td>DBOps</td><td>Database schema</td><td>b4 migrations</td></tr>
+            <tr><td>MLOps</td><td>Models</td><td>b5 tracking, b6 deploy/monitor</td></tr>
+          </tbody>
+        </table>
+        <p>DataOps is the umbrella - the culture and automation that makes all four move at the same cadence. The leader track's session a2 maps each of these to a business risk; worth a skim if you ever have to justify this work to a budget holder.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE REPO AS SOURCE OF TRUTH ============ -->
+  <section class="section" id="repo-flow">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers repo layout + trunk-based Git flow</span>
+      <h2>The repo, and the flow that keeps it sane <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">A data project that lives half in notebooks, half in someone's Downloads folder, cannot be industrialized. Step one is a real repo layout and a branching model simple enough that the whole team actually follows it. For most data teams that is trunk-based development, not the heavy GitFlow of a decade ago.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RetailPulse repo layout on the left and trunk-based Git flow on the right: short branches merge back to main through a pull request">
+        <style>
+          .b1rT { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .b1rM { font: 400 12.5px 'SFMono-Regular', ui-monospace, monospace; fill: #134E4A; }
+          .b1rX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b1rN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b1rBr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; }
+          .b1rMain { stroke: #0F766E; stroke-width: 4; fill: none; }
+          .b1rDot { fill: #14B8A6; }
+        </style>
+        <rect x="30" y="40" width="330" height="216" rx="12" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b1rT" x="52" y="66">retailpulse/</text>
+        <text class="b1rM" x="66" y="92">src/retailpulse/pipeline.py</text>
+        <text class="b1rM" x="66" y="114">tests/test_pipeline.py</text>
+        <text class="b1rM" x="66" y="136">data/ (gitignored)</text>
+        <text class="b1rM" x="66" y="158">.github/workflows/ci.yml</text>
+        <text class="b1rM" x="66" y="180">.pre-commit-config.yaml</text>
+        <text class="b1rM" x="66" y="202">Dockerfile</text>
+        <text class="b1rM" x="66" y="224">pyproject.toml · README.md</text>
+        <text class="b1rX" x="52" y="248">every artifact in one place, in Git</text>
+        <path class="b1rMain" d="M410 210 L840 210"/>
+        <circle class="b1rDot" cx="440" cy="210" r="6"/>
+        <circle class="b1rDot" cx="560" cy="210" r="6"/>
+        <circle class="b1rDot" cx="800" cy="210" r="6"/>
+        <text class="b1rT" x="410" y="240">main</text>
+        <text class="b1rX" x="500" y="240">always releasable</text>
+        <path class="b1rBr" d="M560 210 C 600 150, 640 150, 680 150"/>
+        <path class="b1rBr" d="M680 150 C 730 150, 760 210, 800 210"/>
+        <circle cx="680" cy="150" r="6" fill="#2DD4BF"/>
+        <text class="b1rT" x="600" y="128">feature/clean-nulls</text>
+        <text class="b1rX" x="600" y="176">short-lived · opens a pull request</text>
+        <rect x="30" y="278" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b1rN" x="54" y="290">Branch small, merge fast through a PR that CI must pass. Long branches are where data bugs hide.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - RetailPulse repo layout and the trunk-based flow every change follows</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why trunk-based beats GitFlow for data teams<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>GitFlow - with its develop, release, and hotfix branches - was built for shrink-wrapped software with scheduled releases. Data teams ship continuously and are usually small. Trunk-based development fits better:</p>
+        <ul>
+          <li><strong>One long-lived branch:</strong> <code>main</code>, always releasable. Everything else is a short branch that lives hours to a day.</li>
+          <li><strong>Small pull requests:</strong> a change that touches one transformation, reviewed and merged same-day. Small PRs get better review and cause smaller incidents.</li>
+          <li><strong>CI is the gatekeeper:</strong> the branch cannot merge until the automated checks pass. This is the rule that makes the whole thing safe - and it is a repo setting, not a person's willpower.</li>
+          <li><strong>Protect main:</strong> require the PR and require CI green. In GitHub: Settings -> Branches -> add a rule. Do it on day one, before anyone can push straight to main.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>Data-specific rule</strong>
+          Never commit data. Put <code>data/</code>, <code>.env</code>, and model binaries in <code>.gitignore</code>. Repos are for code and config; real data lives in object storage or a database. A committed 2GB CSV is a mistake you cannot fully undo.
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>A repo layout you will not outgrow<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The <code>src/</code> layout (package under <code>src/</code>, tests beside it) is the boring, correct default - it forces you to install your package the way users will and stops "it imports locally but breaks in CI" surprises.</p>
+        <div class="prompt-box good"><span class="label">Prompt A - the scaffold (bash)</span>mkdir -p retailpulse/src/retailpulse retailpulse/tests retailpulse/data
+cd retailpulse
+printf "data/\n.env\n__pycache__/\n*.parquet\n" &gt; .gitignore
+git init -b main</div>
+        <p>Add a <code>pyproject.toml</code> declaring the package and its dependencies (pandas, pyarrow, pytest). This becomes the single place that says what RetailPulse needs - CI and Docker both read it.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: CI - THE SAFETY NET ============ -->
+  <section class="section" id="ci">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers pre-commit + GitHub Actions CI</span>
+      <h2>CI: the safety net that never sleeps <span class="tag concept">3 min live</span></h2>
+    </div>
+    <p class="lede">Continuous integration means: every push, a machine checks out your code, installs it clean, and runs your linters and tests. If anything is red, the pull request cannot merge. Two layers do this - pre-commit runs on your laptop before the commit, GitHub Actions runs in the cloud on the PR. Defense in depth.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two layers of checks: pre-commit on the laptop, then GitHub Actions in the cloud running install, lint, and test before merge is allowed">
+        <style>
+          .b1cT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b1cI { font: 700 14px Inter, sans-serif; fill: #0F172A; }
+          .b1cX { font: 400 12.5px Inter, sans-serif; fill: #64748B; }
+          .b1cN { font: 600 14px Inter, sans-serif; fill: #431407; }
+          .b1cArr { stroke: #CBD5E1; stroke-width: 2.5; fill: none; marker-end: url(#b1cAh); }
+        </style>
+        <defs>
+          <marker id="b1cAh" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6" fill="none" stroke="#CBD5E1" stroke-width="1.5"/>
+          </marker>
+        </defs>
+        <rect x="30" y="50" width="180" height="60" rx="12" fill="#134E4A"/>
+        <text class="b1cT" x="54" y="78">pre-commit</text>
+        <text class="b1cT" x="54" y="98" font-weight="400" fill="#CCFBF1">black · ruff, on your laptop</text>
+        <rect x="290" y="30" width="150" height="46" rx="10" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b1cI" x="312" y="58">Install (pip)</text>
+        <rect x="290" y="97" width="150" height="46" rx="10" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b1cI" x="312" y="125">Lint (ruff)</text>
+        <rect x="290" y="164" width="150" height="46" rx="10" fill="#ECFDF9" stroke="#99F6E4"/>
+        <text class="b1cI" x="312" y="192">Test (pytest)</text>
+        <rect x="520" y="30" width="180" height="180" rx="12" fill="#0F766E"/>
+        <text class="b1cT" x="544" y="60">GitHub Actions</text>
+        <text class="b1cT" x="544" y="82" font-weight="400" fill="#CCFBF1">runs on every</text>
+        <text class="b1cT" x="544" y="100" font-weight="400" fill="#CCFBF1">pull request</text>
+        <text class="b1cT" x="544" y="140" font-weight="400" fill="#CCFBF1">all green -></text>
+        <text class="b1cT" x="544" y="158" font-weight="400" fill="#CCFBF1">merge allowed</text>
+        <text class="b1cT" x="544" y="176" font-weight="400" fill="#CCFBF1">any red -></text>
+        <text class="b1cT" x="544" y="194" font-weight="400" fill="#CCFBF1">merge blocked</text>
+        <rect x="760" y="90" width="95" height="60" rx="12" fill="#2DD4BF"/>
+        <text class="b1cI" x="784" y="118">main</text>
+        <text class="b1cI" x="774" y="136" font-weight="400" font-size="11">stays green</text>
+        <line class="b1cArr" x1="212" y1="80" x2="286" y2="53"/>
+        <line class="b1cArr" x1="442" y1="53" x2="518" y2="90"/>
+        <line class="b1cArr" x1="442" y1="120" x2="518" y2="120"/>
+        <line class="b1cArr" x1="442" y1="187" x2="518" y2="150"/>
+        <line class="b1cArr" x1="702" y1="120" x2="758" y2="120"/>
+        <rect x="30" y="218" width="14" height="14" rx="3" fill="#F59E0B"/>
+        <text class="b1cN" x="54" y="230">Same three steps run on your laptop and in the cloud. The cloud run is the one that guards main.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - two layers of CI: pre-commit locally, GitHub Actions on the PR</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Pre-commit: catch it before it is even a commit<span class="mini">2 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Pre-commit hooks run on <code>git commit</code> and can auto-format and lint. They keep the diff clean and stop the whole team arguing about style in review. Your workspace default is <code>black</code> for formatting and <code>ruff</code> for linting.</p>
+        <div class="prompt-box good"><span class="label">Prompt B - .pre-commit-config.yaml</span>repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.0
+    hooks: [{ id: ruff, args: [--fix] }, { id: ruff-format }]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks: [{ id: end-of-file-fixer }, { id: check-added-large-files }]</div>
+        <p>Then <code>pip install pre-commit &amp;&amp; pre-commit install</code>. The <code>check-added-large-files</code> hook is your insurance against the accidental committed dataset.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Scaffold RetailPulse and its first pipeline <span class="tag demo">★ 14 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">RetailPulse v0.1: a repo with one honest pipeline - read a raw retail sales CSV, clean it, write a parquet file - plus one test that proves it works. Nothing fancy. Everything in version control.</p>
+
+    <div class="steps">
+      <div class="step"><p>Scaffold with Prompt A above: the <code>src/</code> layout, <code>.gitignore</code>, and <code>git init -b main</code>. Confirm <code>data/</code> is gitignored before you put any CSV in it.</p></div>
+      <div class="step"><p>Write <code>src/retailpulse/pipeline.py</code>: a function <code>clean_sales(in_path, out_path)</code> that reads the CSV with pandas, drops null order ids, coerces the date column, and writes parquet. Keep it under 30 lines - it grows all track long.</p></div>
+      <div class="step"><p>Write <code>tests/test_pipeline.py</code>: build a tiny 3-row DataFrame in the test, run it through the cleaning logic, and assert the row count and that dates parsed. This is the test CI will run.</p></div>
+      <div class="step"><p>Wire pre-commit (Prompt B), run <code>pre-commit install</code>, then <code>git add -A &amp;&amp; git commit</code>. Watch black and ruff tidy your files before the commit completes.</p></div>
+      <div class="step"><p>Run <code>pytest -q</code> locally and see it pass. You now have step 1 and the local half of step 2 from the Part 1 diagram.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ RetailPulse v0.1 - pipeline.py, the whole file</span>import pandas as pd
+
+def clean_sales(in_path: str, out_path: str) -> int:
+    """Read raw retail sales, clean, write parquet. Returns rows written."""
+    df = pd.read_csv(in_path)
+    df = df.dropna(subset=["order_id"])
+    df["order_date"] = pd.to_datetime(df["order_date"], errors="coerce")
+    df = df.dropna(subset=["order_date"])
+    df.to_parquet(out_path, index=False)
+    return len(df)
+
+if __name__ == "__main__":
+    n = clean_sales("data/raw_sales.csv", "data/clean_sales.parquet")
+    print(f"wrote {n} rows")</div>
+
+    <div class="callout tip">
+      <strong>Data tip</strong>
+      Use a public or synthetic retail CSV (Kaggle's "Online Retail" or a generated one). Real confidential data does not belong in a teaching repo - and that discipline, set in session b1, never relaxes.
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Green CI on a pull request, and a Dockerfile <span class="tag demo">★ 8 min · build your own</span></h2>
+    </div>
+    <p class="lede">Now the cloud half. A GitHub Actions workflow runs your tests on every PR; a Dockerfile makes the pipeline run identically anywhere. Push a branch, open a PR, and watch the green check appear.</p>
+
+    <div class="steps">
+      <div class="step"><p>Create <code>.github/workflows/ci.yml</code> from Prompt C. Commit it on <code>main</code> first so the workflow exists.</p></div>
+      <div class="step"><p>Push RetailPulse to a new GitHub repo. In Settings -> Branches, add a rule protecting <code>main</code>: require a pull request and require the CI check to pass.</p></div>
+      <div class="step"><p>Make a change on a branch - <code>git switch -c feature/tidy-dates</code>, tweak the pipeline, push. Open a pull request and watch Actions run install -> lint -> test in the cloud.</p></div>
+      <div class="step"><p>Break it on purpose: push a failing test. See the red X and the blocked merge button. Fix it, see green, merge. That loop is CI, felt.</p></div>
+      <div class="step"><p>Write the Dockerfile (Prompt D) and run <code>docker build -t retailpulse . &amp;&amp; docker run retailpulse</code>. The pipeline runs in a clean container - the same one CI and prod will use later.</p></div>
+    </div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt C - .github/workflows/ci.yml</span>name: CI
+on: [pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: pytest -q</div>
+
+    <div class="prompt-box good"><span class="label">★ Prompt D - Dockerfile</span>FROM python:3.11-slim
+WORKDIR /app
+COPY pyproject.toml .
+RUN pip install --no-cache-dir -e .
+COPY src/ src/
+CMD ["python", "-m", "retailpulse.pipeline"]</div>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The green check that changed the culture.</strong> A data team added exactly this workflow to a two-year-old pile of scripts. In the first week it caught three broken imports and a hardcoded path that only worked on one laptop. Nobody had to be the bad cop in review anymore - the machine was. That is the quiet, real payoff of DataOps: fewer arguments, fewer 2am pages.</p>
+    </div>
+    <div class="callout tip">
+      <strong>☁️ AWS mapping</strong>
+      GitHub Actions is the OSS default here. The same job maps to AWS CodePipeline + CodeBuild (a <code>buildspec.yml</code> instead of a workflow file), or you keep Actions and just deploy to AWS. The container you built runs unchanged on ECS, Fargate, or Batch. The concept - automated lint/test gate before merge - is identical whichever you pick.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 30-45 min total</span></h2>
+    </div>
+    <ul>
+      <li>Finish both demos if you did not complete them live - especially the deliberately-broken PR. Everyone in this track should feel a red check block a merge at least once.</li>
+      <li>Add a second test to RetailPulse: assert that rows with a null <code>order_id</code> are dropped. Watch it run in CI on a PR.</li>
+      <li>Turn on branch protection for <code>main</code> if you skipped it - require the PR and require CI green. This one setting is most of what "governed" means.</li>
+      <li>Add a status badge to your README from the Actions tab. A green badge on the repo front page is a small, real signal of a healthy project.</li>
+      <li>Optional reading: the GitHub Actions quickstart and pre-commit's docs - now you can read them as a review of what you already built.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>What this session covers</h2>
+    </div>
+    <p class="lede">This track teaches DataOps on an open-source stack from the tools' official docs, with AWS mapping notes. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">The DataOps definition + CI/CD concepts</span><span class="note">Part 1 · the four DevOps moves applied to data</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Trunk-based development + repo layout</span><span class="note">Part 2 · flow, branch protection, the src/ layout</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">pre-commit + GitHub Actions docs</span><span class="note">Part 3 + Demo 2 · hooks and the CI workflow</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Docker for Python apps</span><span class="note">Demo 2 · a minimal image; deeper Compose lands in b7</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">AWS CodePipeline / CodeBuild mapping</span><span class="note">Demo 2 sidebar · concept parity, not a full AWS tutorial</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · What does continuous integration (CI) actually guarantee?</p>
+      <button class="qopt" type="button">A · Your code is deployed to production automatically</button>
+      <button class="qopt" type="button">B · Every change is automatically linted and tested before it can merge</button>
+      <button class="qopt" type="button">C · The data is backed up nightly</button>
+      <p class="qwhy">CI is the automated gate on the way in - install, lint, test on every PR. Deploying is CD (continuous delivery), which comes later in the track.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · Why trunk-based development over heavy GitFlow for most data teams?</p>
+      <button class="qopt" type="button">A · It lets you commit large datasets safely</button>
+      <button class="qopt" type="button">B · It removes the need for code review</button>
+      <button class="qopt" type="button">C · Small, short-lived branches merge fast through a PR that CI must pass - fewer places for bugs to hide</button>
+      <p class="qwhy">Data teams ship continuously and are usually small. One releasable main plus short branches gated by CI fits far better than develop/release/hotfix branches.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · Why should <code>data/</code> be in <code>.gitignore</code>?</p>
+      <button class="qopt" type="button">A · Repos are for code and config; real data belongs in storage or a database, and a committed large file cannot be fully undone</button>
+      <button class="qopt" type="button">B · Git cannot store CSV files</button>
+      <button class="qopt" type="button">C · It makes the tests run faster</button>
+      <p class="qwhy">Never commit data. It bloats the repo forever (history keeps it), risks leaking confidential records, and mixes two things that version differently. Code in Git, data in storage.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 1 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>DataOps in one line</b><span>DevOps discipline - version control, CI, CD, containers - applied to data, models, and schema.</span></div>
+      <div class="cheat-item"><b>The assembly line</b><span>Commit -> automated gate (lint/test/quality) -> repeatable run (container) -> production.</span></div>
+      <div class="cheat-item"><b>Git flow</b><span>Trunk-based: one releasable main, short branches, small PRs, CI must pass. Protect main on day one.</span></div>
+      <div class="cheat-item"><b>Never commit data</b><span>data/, .env, model binaries -> .gitignore. Use check-added-large-files as insurance.</span></div>
+      <div class="cheat-item"><b>Two CI layers</b><span>pre-commit (black/ruff, local) + GitHub Actions (install/lint/test on the PR, guards main).</span></div>
+      <div class="cheat-item"><b>Docker</b><span>python:3.11-slim, install from pyproject.toml, COPY src, one CMD. Same image local, CI, prod.</span></div>
+      <div class="cheat-item"><b>AWS mapping</b><span>Actions ≈ CodePipeline + CodeBuild (buildspec.yml). Container runs on ECS/Fargate/Batch unchanged.</span></div>
+      <div class="cheat-item"><b>Running project</b><span>RetailPulse v0.1 lives: repo, pipeline, test, green CI. Next: b2 turns the script into an Airflow DAG.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 1 of 8 · learn-dataops-with-phoebe · by Phoebe Fu</span>
+    <span><a href="../index.html">← All sessions</a> &nbsp;·&nbsp; <a href="b2-orchestration.html">Next: Orchestration - pipelines as code →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>
