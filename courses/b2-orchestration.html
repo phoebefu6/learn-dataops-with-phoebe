@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Builder session 2 · Orchestration: pipelines as code - learn dataops with phoebe</title>
-<link rel="stylesheet" href="../assets/style.css?v=2">
+<link rel="stylesheet" href="../assets/style.css?v=6">
 </head>
 <body>
 
@@ -175,7 +175,8 @@ airflow standalone   # boots a local scheduler + webserver at http://localhost:8
         <line class="b2mArr" x1="422" y1="140" x2="473" y2="140"/>
         <line class="b2mArr" x1="627" y1="140" x2="678" y2="140"/>
         <line class="b2mArr" x1="182" y1="123" x2="238" y2="130"/>
-        <text class="b2mX" x="240" y="230">Each box is a task. An operator is the template that defines what a task does. The DAG is the whole graph and its schedule.</text>
+        <text class="b2mX" x="240" y="230">Each box is a task. An operator is the template that defines</text>
+        <text class="b2mX" x="240" y="247">what a task does. The DAG is the whole graph and its schedule.</text>
         <rect x="40" y="252" width="14" height="14" rx="3" fill="#F59E0B"/>
         <text class="b2mN" x="64" y="264">Scheduler picks the run, executor does the work, tasks flow in dependency order inside the DAG.</text>
       </svg>
@@ -467,6 +468,6 @@ airflow dags backfill retailpulse_daily \
 
 </main>
 
-<script src="../assets/app.js?v=1"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>

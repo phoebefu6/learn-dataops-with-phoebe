@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Builder session 7 · Observability, secrets and IaC - learn dataops with phoebe</title>
-<link rel="stylesheet" href="../assets/style.css?v=2">
+<link rel="stylesheet" href="../assets/style.css?v=6">
 </head>
 <body>
 
@@ -66,7 +66,7 @@
     <p class="lede">Observability is the ability to answer "what is happening and why" without shipping new code to find out. It rests on three kinds of signal: logs (what happened, event by event), metrics (how much and how fast, as numbers over time), and lineage (what depends on what, so a break upstream explains a break downstream). App observability watches these for services. Data observability watches them for the data itself.</p>
 
     <figure class="zoomable">
-      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three signals of observability feeding a single question: logs for what happened, metrics for how much and how fast, lineage for what depends on what">
+      <svg viewBox="0 0 880 269" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three signals of observability feeding a single question: logs for what happened, metrics for how much and how fast, lineage for what depends on what">
         <style>
           .b7sT { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
           .b7sL { font: 400 12.5px Inter, sans-serif; fill: #CCFBF1; }
@@ -97,7 +97,8 @@
         <text class="b7sX" x="710" y="158">in seconds</text>
         <rect x="30" y="230" width="0" height="0"/>
         <rect x="470" y="228" width="14" height="14" rx="3" fill="#F59E0B"/>
-        <text class="b7sN" x="494" y="240">Three signals, one question. Without them, "is it healthy?" is a guess.</text>
+        <text class="b7sN" x="494" y="240">Three signals, one question. Without</text>
+        <text class="b7sN" x="494" y="259">them, "is it healthy?" is a guess.</text>
       </svg>
       <figcaption>🔍 Click to zoom - logs, metrics, and lineage combine to answer one operational question</figcaption>
     </figure>
@@ -453,6 +454,6 @@ volumes:
 
 </main>
 
-<script src="../assets/app.js?v=1"></script>
+<script src="../assets/app.js?v=6"></script>
 </body>
 </html>
