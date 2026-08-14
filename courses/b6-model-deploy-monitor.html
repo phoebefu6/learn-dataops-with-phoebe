@@ -211,7 +211,7 @@ curl -s localhost:8000/predict -H "content-type: application/json" \
     <p class="lede">A deployed model degrades not because the code breaks but because the world moves. Last quarter's buying patterns are not this quarter's. Monitoring watches the live data and predictions, detects when they have drifted away from what the model was trained on, and triggers a retrain before the forecast quietly rots. This is the piece that makes the loop a loop.</p>
 
     <figure class="zoomable">
-      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Production data drifts away from the training distribution over time; drift detection fires a threshold check that triggers retraining">
+      <svg viewBox="0 0 880 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Production data drifts away from the training distribution over time; drift detection fires a threshold check that triggers retraining">
         <style>
           .b6dT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
           .b6dI { font: 700 14px Inter, sans-serif; fill: #0F172A; }
@@ -248,7 +248,7 @@ curl -s localhost:8000/predict -H "content-type: application/json" \
         <path class="b6dArr" d="M650 150 C 500 220, 300 220, 200 190"/>
         <text class="b6dX" x="360" y="238">retrain feeds a fresh model back to the registry - the loop closes</text>
         <rect x="24" y="230" width="14" height="14" rx="3" fill="#F59E0B"/>
-        <text class="b6dN" x="48" y="242">Drift is the smoke alarm; retraining is the response. Detect automatically, decide deliberately.</text>
+        <text class="b6dN" x="48" y="258">Drift is the smoke alarm; retraining is the response. Detect automatically, decide deliberately.</text>
       </svg>
       <figcaption>🔍 Click to zoom - drift detected against the training reference triggers a retrain that closes the loop</figcaption>
     </figure>
