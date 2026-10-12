@@ -81,7 +81,7 @@
     <p class="lede">Observability is the ability to answer "what is happening and why" without shipping new code to find out. It rests on three kinds of signal: logs (what happened, event by event), metrics (how much and how fast, as numbers over time), and lineage (what depends on what, so a break upstream explains a break downstream). App observability watches these for services. Data observability watches them for the data itself.</p>
 
     <figure class="zoomable">
-      <svg viewBox="0 0 880 269" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three signals of observability feeding a single question: logs for what happened, metrics for how much and how fast, lineage for what depends on what">
+      <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three signals of observability feeding a single question: logs for what happened, metrics for how much and how fast, lineage for what depends on what">
         <style>
           .b7sT { font: 700 15px Inter, sans-serif; fill: #FFFFFF; }
           .b7sL { font: 400 12.5px Inter, sans-serif; fill: #CCFBF1; }
@@ -100,14 +100,15 @@
         <rect x="30" y="120" width="200" height="70" rx="12" fill="#0F766E"/>
         <text class="b7sT" x="54" y="150">Metrics</text>
         <text class="b7sL" x="54" y="172">how much · how fast</text>
-        <rect x="30" y="200" width="200" height="50" rx="12" fill="#14B8A6"/>
-        <text class="b7sT" x="54" y="230">Lineage · what depends on what</text>
+        <rect x="30" y="200" width="200" height="70" rx="12" fill="#14B8A6"/>
+        <text class="b7sT" x="54" y="230">Lineage</text>
+        <text class="b7sL" x="54" y="252">what depends on what</text>
         <rect x="470" y="105" width="200" height="80" rx="12" fill="#2DD4BF"/>
         <text class="b7sT" x="494" y="140" fill="#0F172A">Is RetailPulse</text>
         <text class="b7sT" x="494" y="162" fill="#0F172A">healthy right now?</text>
         <line class="b7sArr" x1="232" y1="75" x2="468" y2="130"/>
         <line class="b7sArr" x1="232" y1="155" x2="468" y2="145"/>
-        <line class="b7sArr" x1="232" y1="225" x2="468" y2="160"/>
+        <line class="b7sArr" x1="232" y1="235" x2="468" y2="160"/>
         <text class="b7sX" x="710" y="140">answerable</text>
         <text class="b7sX" x="710" y="158">in seconds</text>
         <rect x="30" y="230" width="0" height="0"/>
@@ -227,7 +228,7 @@ print(f'clean_sales.parquet is {age:.1f}h old')"
         <text class="b7iI" x="384" y="255" fill="#B91C1C">Git repo</text>
         <line class="b7iArr" x1="120" y1="106" x2="120" y2="148"/>
         <path class="b7iNo" d="M215 175 L350 240"/>
-        <path class="b7iNo" d="M235 250 L315 250" transform="rotate(45 275 250)"/>
+        <path class="b7iNo" d="M270 211 L310 211" transform="rotate(-45 290 211)"/>
         <text class="b7iX" x="230" y="215" fill="#B91C1C">never</text>
         <rect x="450" y="40" width="180" height="64" rx="12" fill="#0F766E"/>
         <text class="b7iT" x="474" y="68">IaC · code</text>
@@ -238,7 +239,7 @@ print(f'clean_sales.parquet is {age:.1f}h old')"
         <line class="b7iArr" x1="632" y1="72" x2="698" y2="72"/>
         <text class="b7iX" x="450" y="130">committed - describes services, not secrets</text>
         <line class="b7iArr" x1="212" y1="182" x2="448" y2="90"/>
-        <text class="b7iX" x="250" y="150">values injected at runtime</text>
+        <text class="b7iX" x="300" y="178">values injected at runtime</text>
         <rect x="30" y="258" width="14" height="14" rx="3" fill="#F59E0B"/>
         <text class="b7iN" x="54" y="270">Config as code goes in Git. Secret values never do - they are injected at runtime.</text>
       </svg>
